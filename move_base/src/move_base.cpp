@@ -55,6 +55,7 @@ namespace move_base {
     planner_plan_(NULL), latest_plan_(NULL), controller_plan_(NULL),
     runPlanner_(false), setup_(false), p_freq_change_(false), c_freq_change_(false), new_global_plan_(false) {
 
+    // tyu-MoveBaseActionServer,用来接收/move_base/goal目标的
     as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&MoveBase::executeCb, this, _1), false);
 
     ros::NodeHandle private_nh("~");
@@ -68,6 +69,7 @@ namespace move_base {
     private_nh.param("base_local_planner", local_planner, std::string("base_local_planner/TrajectoryPlannerROS"));
     private_nh.param("global_costmap/robot_base_frame", robot_base_frame_, std::string("base_link"));
     private_nh.param("global_costmap/global_frame", global_frame_, std::string("/map"));
+    // tyu-全局路径规划的频率
     private_nh.param("planner_frequency", planner_frequency_, 0.0);
     private_nh.param("controller_frequency", controller_frequency_, 20.0);
     private_nh.param("planner_patience", planner_patience_, 5.0);
@@ -83,6 +85,7 @@ namespace move_base {
     controller_plan_ = new std::vector<geometry_msgs::PoseStamped>();
 
     //set up the planner's thread
+	// tyu-global planner
     planner_thread_ = new boost::thread(boost::bind(&MoveBase::planThread, this));
 
     //for comanding the base
@@ -95,6 +98,7 @@ namespace move_base {
     //we'll provide a mechanism for some people to send goals as PoseStamped messages over a topic
     //they won't get any useful information back about its status, but this is useful for tools
     //like nav_view and rviz
+    // tyu-从rviz中接收目标点, topic: /move_base_simple/goal
     ros::NodeHandle simple_nh("move_base_simple");
     goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&MoveBase::goalCB, this, _1));
 
@@ -261,6 +265,11 @@ namespace move_base {
     last_config_ = config;
   }
 
+  /**
+   * @brief 把/move_base_simple/goal转换成MoveBaseActionServer的goal
+   *
+   * @param goal
+   */
   void MoveBase::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal){
     ROS_DEBUG_NAMED("move_base","In ROS goal callback, wrapping the PoseStamped in the action message and re-sending to the server.");
     move_base_msgs::MoveBaseActionGoal action_goal;
@@ -333,6 +342,14 @@ namespace move_base {
   }
 
 
+  /**
+   * @brief 提供make_plan服务
+   *
+   * @param req
+   * @param resp
+   *
+   * @return 
+   */
   bool MoveBase::planService(nav_msgs::GetPlan::Request &req, nav_msgs::GetPlan::Response &resp){
     if(as_->isActive()){
       ROS_ERROR("move_base must be in an inactive state to make a plan for an external user");
@@ -448,6 +465,14 @@ namespace move_base {
     tc_.reset();
   }
 
+  /**
+   * @brief 全局路径规划，调用全局的makePlan
+   *
+   * @param goal 目标点
+   * @param plan 
+   *
+   * @return 
+   */
   bool MoveBase::makePlan(const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan){
     boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(planner_costmap_ros_->getCostmap()->getMutex()));
 
@@ -487,6 +512,16 @@ namespace move_base {
     vel_pub_.publish(cmd_vel);
   }
 
+  /**
+   * @brief 检查四元素是否有效,判断标准:
+   *        1. x,y,z,w有限值
+   *        2. 模长大于1e-6
+   *        3. 方向要在水平面上，与z轴垂直
+   *
+   * @param q 输入的四元素
+   *
+   * @return 是否是有效的四元素
+   */
   bool MoveBase::isQuaternionValid(const geometry_msgs::Quaternion& q){
     //first we need to check if the quaternion has nan's or infs
     if(!std::isfinite(q.x) || !std::isfinite(q.y) || !std::isfinite(q.z) || !std::isfinite(q.w)){
@@ -517,7 +552,16 @@ namespace move_base {
     return true;
   }
 
+  /**
+   * @brief 把goal转到全局坐标系下
+   *
+   * @param goal_pose_msg
+   *
+   * @return 
+   */
   geometry_msgs::PoseStamped MoveBase::goalToGlobalFrame(const geometry_msgs::PoseStamped& goal_pose_msg){
+    // tyu-global_frame: map
+    // tyu-goal_pose frame: map
     std::string global_frame = planner_costmap_ros_->getGlobalFrameID();
     tf::Stamped<tf::Pose> goal_pose, global_pose;
     poseStampedMsgToTF(goal_pose_msg, goal_pose);
@@ -546,6 +590,9 @@ namespace move_base {
     planner_cond_.notify_one();
   }
 
+  /**
+   * @brief 全局规划的线程
+   */
   void MoveBase::planThread(){
     ROS_DEBUG_NAMED("move_base_plan_thread","Starting planner thread...");
     ros::NodeHandle n;
@@ -569,6 +616,8 @@ namespace move_base {
 
       //run planner
       planner_plan_->clear();
+      // tyu-开始全局的路径规划,结果保存在planner_plan_
+      // tyu-得到轨迹planner_plan_，保存start->goal
       bool gotPlan = n.ok() && makePlan(temp_goal, *planner_plan_);
 
       if(gotPlan){
@@ -644,6 +693,7 @@ namespace move_base {
     planner_cond_.notify_one();
     lock.unlock();
 
+    // tyu-publish to /move_base_node/current_goal
     current_goal_pub_.publish(goal);
     std::vector<geometry_msgs::PoseStamped> global_plan;
 
@@ -670,6 +720,7 @@ namespace move_base {
         c_freq_change_ = false;
       }
 
+      // tyu-MoveBaseActionServer是否被抢占
       if(as_->isPreemptRequested()){
         if(as_->isNewGoalAvailable()){
           //if we're active and a new goal is available, we'll accept it, but we won't shut anything down
@@ -776,9 +827,18 @@ namespace move_base {
 
   double MoveBase::distance(const geometry_msgs::PoseStamped& p1, const geometry_msgs::PoseStamped& p2)
   {
+    // tyu-hypot: 计算三角形斜边
     return hypot(p1.pose.position.x - p2.pose.position.x, p1.pose.position.y - p2.pose.position.y);
   }
 
+  /**
+   * @brief 局部路径规划的主要函数
+   *
+   * @param goal
+   * @param global_plan
+   *
+   * @return 
+   */
   bool MoveBase::executeCycle(geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& global_plan){
     boost::recursive_mutex::scoped_lock ecl(configuration_mutex_);
     //we need to be able to publish velocity commands
@@ -786,11 +846,13 @@ namespace move_base {
 
     //update feedback to correspond to our curent position
     tf::Stamped<tf::Pose> global_pose;
+    // tyu-获得机器人当前位姿
     planner_costmap_ros_->getRobotPose(global_pose);
     geometry_msgs::PoseStamped current_position;
     tf::poseStampedTFToMsg(global_pose, current_position);
 
     //push the feedback out
+    // tyu-通过/move_base_node/feedback发送当前位置
     move_base_msgs::MoveBaseFeedback feedback;
     feedback.base_position = current_position;
     as_->publishFeedback(feedback);
@@ -829,6 +891,7 @@ namespace move_base {
       lock.unlock();
       ROS_DEBUG_NAMED("move_base","pointers swapped!");
 
+      // tyu-局部路径规划，设置plan，controller_plan_来源于全局规划好的路径
       if(!tc_->setPlan(*controller_plan_)){
         //ABORT and SHUTDOWN COSTMAPS
         ROS_ERROR("Failed to pass global plan to the controller, aborting.");
@@ -890,6 +953,7 @@ namespace move_base {
         {
          boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(controller_costmap_ros_->getCostmap()->getMutex()));
         
+        // tyu-主要的局部算法函数执行
         if(tc_->computeVelocityCommands(cmd_vel)){
           ROS_DEBUG_NAMED( "move_base", "Got a valid command from the local planner: %.3lf, %.3lf, %.3lf",
                            cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z );
