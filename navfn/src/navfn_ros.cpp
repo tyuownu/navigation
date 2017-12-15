@@ -236,9 +236,6 @@ namespace navfn {
       return false;
     }
 
-    ROS_INFO_STREAM("start: " << "wx = " << wx << ", wy = " << wy
-        << ", mx = " << mx << ", my = " << my);
-
     //clear the starting cell within the costmap because we know it can't be an obstacle
     tf::Stamped<tf::Pose> start_pose;
     tf::poseStampedMsgToTF(start, start_pose);
@@ -281,8 +278,6 @@ namespace navfn {
       mx = 0;
       my = 0;
     }
-    ROS_INFO_STREAM("goal: " << "wx = " << wx << ", wy = " << wy
-        << ", mx = " << mx << ", my = " << my);
 
     int map_goal[2];
     map_goal[0] = mx;
