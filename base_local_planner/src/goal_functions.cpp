@@ -185,9 +185,9 @@ namespace base_local_planner {
     const geometry_msgs::PoseStamped& plan_goal_pose = global_plan.back();
     try{
       tf::StampedTransform transform;
-      tf.waitForTransform(global_frame, ros::Time::now(),
-                          plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp,
-                          plan_goal_pose.header.frame_id, ros::Duration(0.5));
+      // tf.waitForTransform(global_frame, ros::Time::now(),
+      //                    plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp,
+      //                    plan_goal_pose.header.frame_id, ros::Duration(0.5));
       tf.lookupTransform(global_frame, ros::Time(),
                          plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp,
                          plan_goal_pose.header.frame_id, transform);
