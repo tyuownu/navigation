@@ -131,6 +131,7 @@ bool LocalPlannerUtil::getLocalPlan(tf::Stamped<tf::Pose>& global_pose, std::vec
 
   //now we'll prune the plan based on the position of the robot
   // tyu-修剪plan，default: false
+  // 看代码，裁掉了开始部分离中心在1m开外的点.
   if(limits_.prune_plan) {
     base_local_planner::prunePlan(global_pose, transformed_plan, global_plan_);
   }

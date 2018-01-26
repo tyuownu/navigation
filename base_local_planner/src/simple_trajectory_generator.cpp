@@ -69,6 +69,7 @@ void SimpleTrajectoryGenerator::initialise(
    */
   double max_vel_th = limits->max_rot_vel;
   double min_vel_th = -1.0 * max_vel_th;
+  // tyu- default false.
   discretize_by_time_ = discretize_by_time;
   Eigen::Vector3f acc_lim = limits->getAccLimits();
   pos_ = pos;
@@ -83,6 +84,7 @@ void SimpleTrajectoryGenerator::initialise(
   double max_vel_y = limits->max_vel_y;
 
   // if sampling number is zero in any dimension, we don't generate samples generically
+  // tyu- 以下永远成立的，因为vsamples读取的时候不可能为0
   if (vsamples[0] * vsamples[1] * vsamples[2] > 0) {
     //compute the feasible velocity space based on the rate at which we run
     Eigen::Vector3f max_vel = Eigen::Vector3f::Zero();
@@ -178,7 +180,8 @@ bool SimpleTrajectoryGenerator::nextTrajectory(Trajectory &comp_traj) {
 /**
  * @param pos current position of robot
  * @param vel desired velocity for sampling
- * 通过速度产生轨迹，num_steps和granularity很相关
+ * 通过速度产生轨迹，num_steps和granularity很相关.
+ * vel为当前从里程计读到的速度，见initialise
  */
 bool SimpleTrajectoryGenerator::generateTrajectory(
       Eigen::Vector3f pos,
