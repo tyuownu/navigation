@@ -268,10 +268,12 @@ void StaticLayer::updateBounds(double robot_x, double robot_y, double robot_yaw,
                                double* max_x, double* max_y)
 {
 
+  /*
   if( !layered_costmap_->isRolling() ){
     if (!map_received_ || !(has_updated_data_ || has_extra_bounds_))
       return;
   }
+  */
 
   useExtraBounds(min_x, min_y, max_x, max_y);
 
