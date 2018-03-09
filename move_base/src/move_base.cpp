@@ -266,13 +266,13 @@ namespace move_base {
   }
 
   void MoveBase::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal){
-    static geometry_msgs::PoseStamped last_vaild_goal;
-    if ( doubleEqual(goal->pose.position.x, last_vaild_goal.pose.position.x) &&
-        doubleEqual(goal->pose.position.y, last_vaild_goal.pose.position.y) &&
-        doubleEqual(goal->pose.orientation.z, goal->pose.orientation.z) &&
-        doubleEqual(goal->pose.orientation.w, goal->pose.orientation.w) )
+    static geometry_msgs::PoseStamped last_valid_goal;
+    if ( doubleEqual(goal->pose.position.x, last_valid_goal.pose.position.x) &&
+        doubleEqual(goal->pose.position.y, last_valid_goal.pose.position.y) &&
+        doubleEqual(goal->pose.orientation.z, last_valid_goal.pose.orientation.z) &&
+        doubleEqual(goal->pose.orientation.w, last_valid_goal.pose.orientation.w) )
       return;
-    last_vaild_goal = *goal;
+    last_valid_goal = *goal;
     ROS_DEBUG_NAMED("move_base","In ROS goal callback, wrapping the PoseStamped in the action message and re-sending to the server.");
     move_base_msgs::MoveBaseActionGoal action_goal;
     action_goal.header.stamp = ros::Time::now();
