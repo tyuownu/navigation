@@ -580,6 +580,41 @@ namespace move_base {
 
       //run planner
       planner_plan_->clear();
+      //andy test code
+      costmap_2d::Costmap2D* cmap = planner_costmap_ros_->getCostmap();
+      double goalWorldx = planner_goal_.pose.position.x;
+      double goalWorldy = planner_goal_.pose.position.y;
+      unsigned int goalMapx,goalMapy;
+      cmap->worldToMap(goalWorldx,goalWorldy,goalMapx,goalMapy);
+      //to determine whether the target is on an obstacle or its inflation radius
+      if(cmap->getCost(goalMapx,goalMapy) == costmap_2d::LETHAL_OBSTACLE || cmap->getCost(goalMapx,goalMapy) == costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
+      {
+        ROS_WARN("TARGET ON AN OBSTACLE");
+        boost::shared_ptr<nav_core::RecoveryBehavior> clear_recovery(recovery_loader_.createInstance("clear_costmap_recovery/ClearCostmapRecovery"));
+        clear_recovery->initialize("conservative_reset", &tf_, planner_costmap_ros_, controller_costmap_ros_);
+        clear_recovery->runBehavior();
+
+        if(cmap->getCost(goalMapx,goalMapy) == costmap_2d::LETHAL_OBSTACLE || cmap->getCost(goalMapx,goalMapy) == costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
+        {
+          tf::Stamped<tf::Pose> newglobal_pose;
+          planner_costmap_ros_->getRobotPose(newglobal_pose);
+          geometry_msgs::PoseStamped robotPose;
+          tf::poseStampedTFToMsg(newglobal_pose, robotPose);
+          double robotWorldx = robotPose.pose.position.x;
+          double robotWorldy = robotPose.pose.position.y;
+          unsigned int robotMapx,robotMapy;
+          cmap->worldToMap(robotWorldx,robotWorldy,robotMapx,robotMapy);
+          // to find another goal in the nearby of the given goal
+          findAnotherGoal(robotMapx,robotMapy,goalMapx,goalMapy,cmap,1);
+          cmap->mapToWorld(goalMapx,goalMapy,goalWorldx,goalWorldy);
+
+          planner_goal_.pose.position.x = goalWorldx;
+          planner_goal_.pose.position.y = goalWorldy;
+
+          ROS_WARN("Now heading to a position close to the input Target");
+        }
+      }
+
       bool gotPlan = n.ok() && makePlan(temp_goal, *planner_plan_);
 
       if(gotPlan){
@@ -1139,4 +1174,46 @@ namespace move_base {
       controller_costmap_ros_->stop();
     }
   }
+
+  void findAnotherGoal(unsigned int robotMapx,unsigned int robotMapy,unsigned int& goalMapx,unsigned int& goalMapy,costmap_2d::Costmap2D* cmap,int range)
+    {
+      //to find the available points in the map (free or unknown are both considerable)
+      std::vector<std::pair<int,int> > validPointCollection;
+      for(int i = -range;i <= range;i++)
+      {
+        for(int j = -range;j <= range;j++)
+        {
+          if(abs(i) == range || abs(j) == range)
+            if(cmap->getCost(goalMapx + i,goalMapy + j) != costmap_2d::LETHAL_OBSTACLE && cmap->getCost(goalMapx + i,goalMapy + j) != costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
+              validPointCollection.push_back(std::make_pair(i,j));
+        }
+      }
+
+      if(validPointCollection.size() != 0)
+      {
+        int currentClosestDistance;
+        std::pair<int,int> closestPoint;
+        for(std::vector<std::pair<int,int> >::iterator itr = validPointCollection.begin();itr != validPointCollection.end();itr++)
+        {
+          if(itr == validPointCollection.begin())
+          {
+            closestPoint = *itr;
+            currentClosestDistance = (robotMapx - (goalMapx + (*itr).first)) * (robotMapx - (goalMapx + (*itr).first)) + (robotMapy - (goalMapy + (*itr).second)) * (robotMapy - (goalMapy + (*itr).second));
+          }
+          else //to find the closest point from current robot position
+          {
+            int currentDistance = (robotMapx - (goalMapx + (*itr).first)) * (robotMapx - (goalMapx + (*itr).first)) + (robotMapy - (goalMapy + (*itr).second)) * (robotMapy - (goalMapy + (*itr).second));
+            if(currentDistance < currentClosestDistance)
+            {
+              closestPoint = *itr;
+              currentClosestDistance = currentDistance;
+            }
+          }
+        }
+        goalMapx += closestPoint.first;
+        goalMapy += closestPoint.second;
+      }
+      else   //to find an available goal recursively
+        findAnotherGoal(robotMapx,robotMapy,goalMapx,goalMapy,cmap,range + 1);
+    }
 };
