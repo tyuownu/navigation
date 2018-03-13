@@ -230,6 +230,7 @@ namespace move_base {
       bool setup_, p_freq_change_, c_freq_change_;
       bool new_global_plan_;
   };
+  void findAnotherGoal(unsigned int robotMapx,unsigned int robotMapy,unsigned int& goalMapx,unsigned int& goalMapy,costmap_2d::Costmap2D* cmap,int range);
 };
 #endif
 
