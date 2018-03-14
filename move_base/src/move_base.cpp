@@ -610,6 +610,7 @@ namespace move_base {
 
           planner_goal_.pose.position.x = goalWorldx;
           planner_goal_.pose.position.y = goalWorldy;
+          temp_goal = planner_goal_;
 
           ROS_WARN("Now heading to a position close to the input Target");
         }
