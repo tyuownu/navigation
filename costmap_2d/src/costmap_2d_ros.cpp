@@ -553,4 +553,15 @@ void Costmap2DROS::getOrientedFootprint(std::vector<geometry_msgs::Point>& orien
                      padded_footprint_, oriented_footprint);
 }
 
+void Costmap2DROS::setRobotRadius(const double radius)
+{
+  ROS_INFO("set radius to %f, ......", radius);
+  setUnpaddedRobotFootprint(makeFootprintFromRadius(radius));
+  old_config_.robot_radius = radius;
+}
+
+double Costmap2DROS::getRobotRadius() const
+{
+  return old_config_.robot_radius;
+}
 }  // namespace costmap_2d
