@@ -77,6 +77,7 @@ namespace dwa_local_planner {
     stop_time_buffer_ = config.stop_time_buffer;
     oscillation_costs_.setOscillationResetDist(config.oscillation_reset_dist, config.oscillation_reset_angle);
     forward_point_distance_ = config.forward_point_distance;
+    cheat_factor_ = config.cheat_factor;
     goal_front_costs_.setXShift(forward_point_distance_);
     alignment_costs_.setXShift(forward_point_distance_);
  
