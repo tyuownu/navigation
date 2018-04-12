@@ -250,7 +250,7 @@ namespace navfn {
             }
             else if(v == COST_UNKNOWN_ROS && allow_unknown)
             {
-              v = COST_OBS-1;
+              v = COST_NEUTRAL;
               *cm = v;
             }
           }
@@ -277,7 +277,7 @@ namespace navfn {
             }
             else if(v == COST_UNKNOWN_ROS)
             {
-              v = COST_OBS-1;
+              v = COST_NEUTRAL;
               *cm = v;
             }
           }
