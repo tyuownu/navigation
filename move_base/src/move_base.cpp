@@ -461,9 +461,6 @@ namespace move_base {
 
   bool MoveBase::makePlan(const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan){
     boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(planner_costmap_ros_->getCostmap()->getMutex()));
-    static int i = 100;  // index to set costmap radius back
-    static double global_radius = planner_costmap_ros_->getRobotRadius();
-    static double local_radius = controller_costmap_ros_->getRobotRadius();
 
     //make sure to set the plan to be empty initially
     plan.clear();
@@ -487,15 +484,7 @@ namespace move_base {
     //if the planner fails or returns a zero length plan, planning failed
     if(!planner_->makePlan(start, goal, plan) || plan.empty()){
       ROS_DEBUG_NAMED("move_base","Failed to find a  plan to point (%.2f, %.2f)", goal.pose.position.x, goal.pose.position.y);
-
-      ROS_INFO("Failed to find a plan");
-      planner_costmap_ros_->setRobotRadius(local_radius);
-      i = 0;
       return false;
-    }
-
-    if ( i++ == 50 ) {
-      planner_costmap_ros_->setRobotRadius(global_radius);
     }
 
     return true;
