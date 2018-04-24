@@ -220,7 +220,7 @@ positions at about 1/2 cell resolution; else returns 0.
        */
       void updateCellAstar(int n);	/**< updates the cell at index <n>, uses A* heuristic */
 
-      void setupNavFn(bool keepit = false); /**< resets all nav fn arrays for propagation */
+      bool setupNavFn(bool keepit = false); /**< resets all nav fn arrays for propagation */
 
       /**
        * @brief  Run propagation for <cycles> iterations, or until start is reached using breadth-first Dijkstra method
