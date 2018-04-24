@@ -295,7 +295,12 @@ namespace navfn {
       snprintf( costmap_filename, 1000, "navfn-dijkstra-costmap-%04d", file_number++ );
       savemap( costmap_filename );
 #endif
-      setupNavFn(true);
+      if ( !setupNavFn(true) ) {
+        if ( pathx && pathy )
+          return true;
+        else
+          return false;
+      }
 
       // calculate the nav fn and path
       propNavFnDijkstra(std::max(nx*ny/20,nx+ny),atStart);
@@ -398,7 +403,7 @@ namespace navfn {
 
   // Set up navigation potential arrays for new propagation
 
-  void
+  bool
     NavFn::setupNavFn(bool keepit)
     {
       // reset values in propagation arrays
@@ -447,6 +452,11 @@ namespace navfn {
           ntot++;			// number of cells that are obstacles
       }
       nobs = ntot;
+      int border_obs_count = 2 * nx + 2 * ny - 4;
+      if ( border_obs_count == nobs )
+        return false;
+      else
+        return true;
     }
 
 
