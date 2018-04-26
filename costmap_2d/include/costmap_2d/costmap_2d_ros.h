@@ -213,6 +213,17 @@ public:
    * getUnpaddedRobotFootprint(). */
   void setUnpaddedRobotFootprintPolygon(const geometry_msgs::Polygon& footprint);
 
+  /**
+   * @brief  Adjust the robot radius in costmap
+   * @param  radius The radius to set.
+   */
+  void setRobotRadius(const double radius);
+
+  /**
+   * @brief  To get the robot radius
+   */
+  double getRobotRadius() const;
+
 protected:
   LayeredCostmap* layered_costmap_;
   std::string name_;
