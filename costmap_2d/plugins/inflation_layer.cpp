@@ -136,10 +136,10 @@ void InflationLayer::updateBounds(double robot_x, double robot_y, double robot_y
     // For some reason when I make these -<double>::max() it does not
     // work with Costmap2D::worldToMapEnforceBounds(), so I'm using
     // -<float>::max() instead.
-    *min_x = -std::numeric_limits<float>::max();
-    *min_y = -std::numeric_limits<float>::max();
-    *max_x = std::numeric_limits<float>::max();
-    *max_y = std::numeric_limits<float>::max();
+    *min_x = -std::numeric_limits<double>::max();
+    *min_y = -std::numeric_limits<double>::max();
+    *max_x = std::numeric_limits<double>::max();
+    *max_y = std::numeric_limits<double>::max();
     need_reinflation_ = false;
   }
   else
