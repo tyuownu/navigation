@@ -85,7 +85,7 @@ namespace move_base {
     controller_plan_ = new std::vector<geometry_msgs::PoseStamped>();
 
     //set up the planner's thread
-	// tyu-global planner
+    // tyu-global planner
     planner_thread_ = new boost::thread(boost::bind(&MoveBase::planThread, this));
 
     //for comanding the base

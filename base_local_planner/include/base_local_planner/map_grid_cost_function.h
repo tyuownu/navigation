@@ -77,7 +77,7 @@ public:
       double xshift = 0.0,
       double yshift = 0.0,
       bool is_local_goal_function = false,
-	  // tyu-控制score方式，默认采用最后一个值，评价局部轨迹
+      // tyu-控制score方式，默认采用最后一个值，评价局部轨迹
       CostAggregationType aggregationType = Last);
 
   ~MapGridCostFunction() {}

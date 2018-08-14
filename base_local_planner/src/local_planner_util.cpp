@@ -121,11 +121,11 @@ bool LocalPlannerUtil::getLocalPlan(tf::Stamped<tf::Pose>& global_pose, std::vec
   ROS_INFO_STREAM("global pose: " << global_pose.getOrigin().x() << ", " << global_pose.getOrigin().y());
   ROS_INFO_STREAM("global_plan_ size: " << global_plan_.size());
   for ( size_t i = 0; i < global_plan_.size() ; ++i) {
-	  ROS_INFO_STREAM("x: " << global_plan_[i].pose.position.x << ",y: " << global_plan_[i].pose.position.y);
+      ROS_INFO_STREAM("x: " << global_plan_[i].pose.position.x << ",y: " << global_plan_[i].pose.position.y);
   }
   ROS_INFO_STREAM("transformed_plan size: " << transformed_plan.size());
   for ( size_t i = 0; i < transformed_plan.size() ; ++i) {
-	  ROS_INFO_STREAM("x: " << transformed_plan[i].pose.position.x << ",y: " << transformed_plan[i].pose.position.y);
+      ROS_INFO_STREAM("x: " << transformed_plan[i].pose.position.x << ",y: " << transformed_plan[i].pose.position.y);
   }
   */
 

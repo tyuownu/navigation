@@ -51,28 +51,28 @@ namespace base_local_planner {
   double SimpleScoredSamplingPlanner::scoreTrajectory(Trajectory& traj, double best_traj_cost) {
     double traj_cost = 0;
     int gen_id = 0;
-	// ROS_INFO(__func__);
+    // ROS_INFO(__func__);
     for(std::vector<TrajectoryCostFunction*>::iterator score_function = critics_.begin(); score_function != critics_.end(); ++score_function) {
       TrajectoryCostFunction* score_function_p = *score_function;
-	  // tyu-getScale的默认值为1.0
+      // tyu-getScale的默认值为1.0
       if (score_function_p->getScale() == 0) {
         continue;
       }
-	  /* tyu-
-	  critics按顺序压入为:
-	oscillation_costs_: cost始终为0，详见scoreTrajectory函数
+      /* tyu-
+      critics按顺序压入为:
+    oscillation_costs_: cost始终为0，详见scoreTrajectory函数
     obstacle_costs_: 通过把机器人外部轮廓沿着traj投影，判断各条机器人边界的costmap比较值，碰到障碍物为负
     goal_front_costs_: 
     alignment_costs_: 
     path_costs_: 
     goal_costs_: 
     twirling_costs_： 他的scale_设置为0，可以不考虑，但是也可以看看不设置为0是什么含义
-	  */
+      */
       double cost = score_function_p->scoreTrajectory(traj);
-	  /* tyu-显示计算出来的score cost
-	  ROS_INFO_STREAM("score cost: " << cost);
-	  */
-	  // ROS_INFO_STREAM("score cost: " << cost);
+      /* tyu-显示计算出来的score cost
+      ROS_INFO_STREAM("score cost: " << cost);
+      */
+      // ROS_INFO_STREAM("score cost: " << cost);
       if (cost < 0) {
         ROS_DEBUG("Velocity %.3lf, %.3lf, %.3lf discarded by cost function  %d with cost: %f", traj.xv_, traj.yv_, traj.thetav_, gen_id, cost);
         traj_cost = cost;
@@ -114,7 +114,7 @@ namespace base_local_planner {
       count_valid = 0;
       TrajectorySampleGenerator* gen_ = *loop_gen;
       while (gen_->hasMoreTrajectories()) {
-		  // tyu-取每一个(vx,vy,v_th)样本，生成轨迹
+          // tyu-取每一个(vx,vy,v_th)样本，生成轨迹
         gen_success = gen_->nextTrajectory(loop_traj);
         if (gen_success == false) {
           // TODO use this for debugging
@@ -128,14 +128,14 @@ namespace base_local_planner {
 
         if (loop_traj_cost >= 0) {
           count_valid++;
-		  // tyu-最佳轨迹是越小越好，但是要大于0
+          // tyu-最佳轨迹是越小越好，但是要大于0
           if (best_traj_cost < 0 || loop_traj_cost < best_traj_cost) {
             best_traj_cost = loop_traj_cost;
             best_traj = loop_traj;
           }
         }
         count++;
-		// tyu-max_samples_控制最大采样数，默认值为-1
+        // tyu-max_samples_控制最大采样数，默认值为-1
         if (max_samples_ > 0 && count >= max_samples_) {
           break;
         }        
@@ -158,7 +158,7 @@ namespace base_local_planner {
         break;
       }
     }
-	// ROS_INFO_STREAM("best trajectory: " << traj.xv_ << ", " << traj.yv_ << ", " << traj.thetav_ << ", " << traj.cost_);
+    // ROS_INFO_STREAM("best trajectory: " << traj.xv_ << ", " << traj.yv_ << ", " << traj.thetav_ << ", " << traj.cost_);
     return best_traj_cost >= 0;
   }
 

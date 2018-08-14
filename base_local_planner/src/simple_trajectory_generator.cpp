@@ -90,7 +90,7 @@ void SimpleTrajectoryGenerator::initialise(
     Eigen::Vector3f max_vel = Eigen::Vector3f::Zero();
     Eigen::Vector3f min_vel = Eigen::Vector3f::Zero();
 
-	// tyu-use_dwa_默认值为true
+    // tyu-use_dwa_默认值为true
     if ( ! use_dwa_) {
       // there is no point in overshooting the goal, and it also may break the
       // robot behavior, so we limit the velocities to those that do not overshoot in sim_time
@@ -108,7 +108,7 @@ void SimpleTrajectoryGenerator::initialise(
       min_vel[2] = std::max(min_vel_th, vel[2] - acc_lim[2] * sim_time_);
     } else {
       // with dwa do not accelerate beyond the first step, we only sample within velocities we reach in sim_period
-		// tyu-sim_period_默认设置为0.05,实际可以通过controller_frequency控制
+        // tyu-sim_period_默认设置为0.05,实际可以通过controller_frequency控制
       max_vel[0] = std::min(max_vel_x, vel[0] + acc_lim[0] * sim_period_);
       max_vel[1] = std::min(max_vel_y, vel[1] + acc_lim[1] * sim_period_);
       max_vel[2] = std::min(max_vel_th, vel[2] + acc_lim[2] * sim_period_);
@@ -188,11 +188,11 @@ bool SimpleTrajectoryGenerator::generateTrajectory(
       Eigen::Vector3f vel,
       Eigen::Vector3f sample_target_vel,
       base_local_planner::Trajectory& traj) {
-	/* tyu- 显示采样的速度值
-	ROS_INFO_STREAM("vel sample: " << sample_target_vel[0] << ", "
-					<< sample_target_vel[1] << ", "
-					<< sample_target_vel[2] );
-	*/
+    /* tyu- 显示采样的速度值
+    ROS_INFO_STREAM("vel sample: " << sample_target_vel[0] << ", "
+                    << sample_target_vel[1] << ", "
+                    << sample_target_vel[2] );
+    */
 
   double vmag = hypot(sample_target_vel[0], sample_target_vel[1]);
   double eps = 1e-4;
@@ -216,7 +216,7 @@ bool SimpleTrajectoryGenerator::generateTrajectory(
     num_steps = ceil(sim_time_ / sim_granularity_);
   } else {
     //compute the number of steps we must take along this trajectory to be "safe"
-	  // tyu-模拟运行的距离和角度
+      // tyu-模拟运行的距离和角度
     double sim_time_distance = vmag * sim_time_; // the distance the robot would travel in sim_time if it did not change velocity
     double sim_time_angle = fabs(sample_target_vel[2]) * sim_time_; // the angle the robot would rotate in sim_time
     num_steps =
@@ -248,7 +248,7 @@ bool SimpleTrajectoryGenerator::generateTrajectory(
   //simulate the trajectory and check for collisions, updating costs along the way
   
   for (int i = 0; i < num_steps; ++i) {
-	  //ROS_INFO_STREAM("pos: " << pos[0] << ", " << pos[1] << ", " << pos[2]);
+      //ROS_INFO_STREAM("pos: " << pos[0] << ", " << pos[1] << ", " << pos[2]);
   
 
     //add the point to the trajectory so we can draw it later if we want

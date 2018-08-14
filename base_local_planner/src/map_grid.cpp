@@ -110,7 +110,7 @@ namespace base_local_planner{
          cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE ||
          cost == costmap_2d::NO_INFORMATION)){
       check_cell->target_dist = obstacleCosts();
-//	  ROS_INFO_STREAM();
+      //      ROS_INFO_STREAM();
       return false;
     }
 

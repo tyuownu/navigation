@@ -62,8 +62,8 @@ namespace base_local_planner {
       virtual double footprintCost(const geometry_msgs::Point& position, const std::vector<geometry_msgs::Point>& footprint,
           double inscribed_radius, double circumscribed_radius) = 0;
 
-	  // tyu-inscribed_radius机器人内接半径
-	  // tyu-circumscribed_radius机器人外接半径
+      // tyu-inscribed_radius机器人内接半径
+      // tyu-circumscribed_radius机器人外接半径
       double footprintCost(double x, double y, double theta, const std::vector<geometry_msgs::Point>& footprint_spec, double inscribed_radius = 0.0, double circumscribed_radius=0.0){
 
         double cos_th = cos(theta);

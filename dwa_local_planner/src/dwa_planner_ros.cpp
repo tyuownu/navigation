@@ -63,20 +63,20 @@ namespace dwa_local_planner {
 
       // update generic local planner params
       base_local_planner::LocalPlannerLimits limits;
-	  // tyu-from base_local_planner/src/local_planner_limits/__init__.py
-	  // tyu-最大运行速度，为实际运行时的速度
+      // tyu-from base_local_planner/src/local_planner_limits/__init__.py
+      // tyu-最大运行速度，为实际运行时的速度
       limits.max_trans_vel = config.max_trans_vel;                       // default: 0.55
-	  // tyu-最小运行速度
+      // tyu-最小运行速度
       limits.min_trans_vel = config.min_trans_vel;                       // default: 0.1
-	  // tyu-采样时的最大速度, x轴
+      // tyu-采样时的最大速度, x轴
       limits.max_vel_x = config.max_vel_x;                               // default: 0.55
-	  // tyu-采样时的最小速度, x轴
+      // tyu-采样时的最小速度, x轴
       limits.min_vel_x = config.min_vel_x;                               // default: 0.0
-	  // tyu-采样时的最大速度, y轴
+      // tyu-采样时的最大速度, y轴
       limits.max_vel_y = config.max_vel_y;                               // default: 0.1
-	  // tyu-采样时的最小速度, y轴
+      // tyu-采样时的最小速度, y轴
       limits.min_vel_y = config.min_vel_y;                               // default: -0.1
-	  // tyu-这个可以同时控制采样和运行的角速度
+      // tyu-这个可以同时控制采样和运行的角速度
       limits.max_rot_vel = config.max_rot_vel;                           // default: 1.0
       limits.min_rot_vel = config.min_rot_vel;                           // default: 0.4
       limits.acc_lim_x = config.acc_lim_x;                               // default: 2.5
@@ -200,7 +200,7 @@ namespace dwa_local_planner {
     }
 
     tf::Stamped<tf::Pose> robot_vel;
-	// 获得当前里程计的速度值
+    // 获得当前里程计的速度值
     odom_helper_.getRobotVel(robot_vel);
 
     /* For timing uncomment
@@ -210,12 +210,12 @@ namespace dwa_local_planner {
     */
 
     //compute what trajectory to drive along
-	// tyu-drive_cmds frame_id_: base_link
+    // tyu-drive_cmds frame_id_: base_link
     tf::Stamped<tf::Pose> drive_cmds;
     drive_cmds.frame_id_ = costmap_ros_->getBaseFrameID();
     
     // call with updated footprint
-	// tyu-dwa寻找最佳路径函数
+    // tyu-dwa寻找最佳路径函数
     base_local_planner::Trajectory path = dp_->findBestPath(global_pose, robot_vel, drive_cmds, costmap_ros_->getRobotFootprint());
     //ROS_ERROR("Best: %.2f, %.2f, %.2f, %.2f", path.xv_, path.yv_, path.thetav_, path.cost_);
 
@@ -228,7 +228,7 @@ namespace dwa_local_planner {
     */
 
     //pass along drive commands
-	// tyu-角速度，正值为左拐，负值为右拐
+    // tyu-角速度，正值为左拐，负值为右拐
     cmd_vel.linear.x = drive_cmds.getOrigin().getX();
     cmd_vel.linear.y = drive_cmds.getOrigin().getY();
     cmd_vel.angular.z = tf::getYaw(drive_cmds.getRotation());
@@ -278,7 +278,7 @@ namespace dwa_local_planner {
       return false;
     }
     std::vector<geometry_msgs::PoseStamped> transformed_plan;
-	// tyu-得到local costmap范围内的plan: transformed_plan
+    // tyu-得到local costmap范围内的plan: transformed_plan
     if ( ! planner_util_.getLocalPlan(current_pose_, transformed_plan)) {
       ROS_ERROR("Could not get local plan");
       return false;

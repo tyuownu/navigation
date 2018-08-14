@@ -77,10 +77,10 @@ bool MapGridCostFunction::prepare() {
   
 
   for (int i = 0; i < map_.size_x_; ++i) {
-	  for (int j = 0; j < map_.size_y_; ++j) {
-		  outfile << map_.getCell(i,j).target_dist << " ";
-	  }
-	  outfile << "\n";
+      for (int j = 0; j < map_.size_y_; ++j) {
+          outfile << map_.getCell(i,j).target_dist << " ";
+      }
+      outfile << "\n";
   }*/
   return true;
 }
@@ -103,7 +103,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
     traj.getPoint(i, px, py, pth);
 
     // translate point forward if specified
-	// tyu-默认值为0，但是在goal_front_costs_和alignment_cost_设置为默认值0.325
+    // tyu-默认值为0，但是在goal_front_costs_和alignment_cost_设置为默认值0.325
     if (xshift_ != 0.0) {
       px = px + xshift_ * cos(pth);
       py = py + xshift_ * sin(pth);
@@ -122,7 +122,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
     }
     grid_dist = getCellCosts(cell_x, cell_y);
     //if a point on this trajectory has no clear path to the goal... it may be invalid
-	// tyu-stop_on_failure_默认值为true，但是goal_front_costs_和alignment_costs_设置为false
+    // tyu-stop_on_failure_默认值为true，但是goal_front_costs_和alignment_costs_设置为false
     if (stop_on_failure_) {
       if (grid_dist == map_.obstacleCosts()) {
         return -3.0;
