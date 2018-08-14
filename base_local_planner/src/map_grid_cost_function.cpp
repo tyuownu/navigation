@@ -36,6 +36,7 @@
  *********************************************************************/
 
 #include <base_local_planner/map_grid_cost_function.h>
+#include <fstream>
 
 namespace base_local_planner {
 
@@ -59,11 +60,28 @@ void MapGridCostFunction::setTargetPoses(std::vector<geometry_msgs::PoseStamped>
 bool MapGridCostFunction::prepare() {
   map_.resetPathDist();
 
+  // tyu-对于goal_front_costs和goal_costs的is_local_goal_function_为true，其他为false
   if (is_local_goal_function_) {
     map_.setLocalGoal(*costmap_, target_poses_);
   } else {
     map_.setTargetCells(*costmap_, target_poses_);
   }
+  
+  // tyu-save map
+  /* tyu-用来保存map来判断其值
+  char fn[4096];
+  static int index = 0;
+  sprintf(fn, "%d.txt", index++);
+  std::ofstream outfile;
+  outfile.open(fn);
+  
+
+  for (int i = 0; i < map_.size_x_; ++i) {
+	  for (int j = 0; j < map_.size_y_; ++j) {
+		  outfile << map_.getCell(i,j).target_dist << " ";
+	  }
+	  outfile << "\n";
+  }*/
   return true;
 }
 
@@ -85,6 +103,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
     traj.getPoint(i, px, py, pth);
 
     // translate point forward if specified
+	// tyu-默认值为0，但是在goal_front_costs_和alignment_cost_设置为默认值0.325
     if (xshift_ != 0.0) {
       px = px + xshift_ * cos(pth);
       py = py + xshift_ * sin(pth);
@@ -103,6 +122,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
     }
     grid_dist = getCellCosts(cell_x, cell_y);
     //if a point on this trajectory has no clear path to the goal... it may be invalid
+	// tyu-stop_on_failure_默认值为true，但是goal_front_costs_和alignment_costs_设置为false
     if (stop_on_failure_) {
       if (grid_dist == map_.obstacleCosts()) {
         return -3.0;

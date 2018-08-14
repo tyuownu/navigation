@@ -34,7 +34,7 @@
  *
  * Author: TKruse
  *********************************************************************/
-
+#include <ros/ros.h>
 #include <base_local_planner/simple_trajectory_generator.h>
 
 #include <cmath>
@@ -69,6 +69,7 @@ void SimpleTrajectoryGenerator::initialise(
    */
   double max_vel_th = limits->max_rot_vel;
   double min_vel_th = -1.0 * max_vel_th;
+  // tyu- default false.
   discretize_by_time_ = discretize_by_time;
   Eigen::Vector3f acc_lim = limits->getAccLimits();
   pos_ = pos;
@@ -83,11 +84,13 @@ void SimpleTrajectoryGenerator::initialise(
   double max_vel_y = limits->max_vel_y;
 
   // if sampling number is zero in any dimension, we don't generate samples generically
+  // tyu- 以下永远成立的，因为vsamples读取的时候不可能为0
   if (vsamples[0] * vsamples[1] * vsamples[2] > 0) {
     //compute the feasible velocity space based on the rate at which we run
     Eigen::Vector3f max_vel = Eigen::Vector3f::Zero();
     Eigen::Vector3f min_vel = Eigen::Vector3f::Zero();
 
+	// tyu-use_dwa_默认值为true
     if ( ! use_dwa_) {
       // there is no point in overshooting the goal, and it also may break the
       // robot behavior, so we limit the velocities to those that do not overshoot in sim_time
@@ -105,6 +108,7 @@ void SimpleTrajectoryGenerator::initialise(
       min_vel[2] = std::max(min_vel_th, vel[2] - acc_lim[2] * sim_time_);
     } else {
       // with dwa do not accelerate beyond the first step, we only sample within velocities we reach in sim_period
+		// tyu-sim_period_默认设置为0.05,实际可以通过controller_frequency控制
       max_vel[0] = std::min(max_vel_x, vel[0] + acc_lim[0] * sim_period_);
       max_vel[1] = std::min(max_vel_y, vel[1] + acc_lim[1] * sim_period_);
       max_vel[2] = std::min(max_vel_th, vel[2] + acc_lim[2] * sim_period_);
@@ -176,12 +180,20 @@ bool SimpleTrajectoryGenerator::nextTrajectory(Trajectory &comp_traj) {
 /**
  * @param pos current position of robot
  * @param vel desired velocity for sampling
+ * 通过速度产生轨迹，num_steps和granularity很相关.
+ * vel为当前从里程计读到的速度，见initialise
  */
 bool SimpleTrajectoryGenerator::generateTrajectory(
       Eigen::Vector3f pos,
       Eigen::Vector3f vel,
       Eigen::Vector3f sample_target_vel,
       base_local_planner::Trajectory& traj) {
+	/* tyu- 显示采样的速度值
+	ROS_INFO_STREAM("vel sample: " << sample_target_vel[0] << ", "
+					<< sample_target_vel[1] << ", "
+					<< sample_target_vel[2] );
+	*/
+
   double vmag = hypot(sample_target_vel[0], sample_target_vel[1]);
   double eps = 1e-4;
   traj.cost_   = -1.0; // placed here in case we return early
@@ -204,6 +216,7 @@ bool SimpleTrajectoryGenerator::generateTrajectory(
     num_steps = ceil(sim_time_ / sim_granularity_);
   } else {
     //compute the number of steps we must take along this trajectory to be "safe"
+	  // tyu-模拟运行的距离和角度
     double sim_time_distance = vmag * sim_time_; // the distance the robot would travel in sim_time if it did not change velocity
     double sim_time_angle = fabs(sample_target_vel[2]) * sim_time_; // the angle the robot would rotate in sim_time
     num_steps =
@@ -216,6 +229,8 @@ bool SimpleTrajectoryGenerator::generateTrajectory(
   traj.time_delta_ = dt;
 
   Eigen::Vector3f loop_vel;
+  // tyu-contimued_acceleration_ = !use_dwa(default, false)
+  // tyu-意思是在这一段过程中，机器人是保持加速运动，还是保持匀速运动
   if (continued_acceleration_) {
     // assuming the velocity of the first cycle is the one we want to store in the trajectory object
     loop_vel = computeNewVelocities(sample_target_vel, vel, limits_->getAccLimits(), dt);
@@ -231,7 +246,10 @@ bool SimpleTrajectoryGenerator::generateTrajectory(
   }
 
   //simulate the trajectory and check for collisions, updating costs along the way
+  
   for (int i = 0; i < num_steps; ++i) {
+	  //ROS_INFO_STREAM("pos: " << pos[0] << ", " << pos[1] << ", " << pos[2]);
+  
 
     //add the point to the trajectory so we can draw it later if we want
     traj.addPoint(pos[0], pos[1], pos[2]);

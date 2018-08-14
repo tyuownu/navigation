@@ -50,6 +50,7 @@ namespace base_local_planner {
  *return the value of the last point (if no of the earlier points were in
  * return collision), the sum for all points, or the product of all (non-zero) points
  */
+// tyu-计算轨迹的标准，可以采取最后一个点，所有点总和或者所有点乘积
 enum CostAggregationType { Last, Sum, Product};
 
 /**
@@ -76,6 +77,7 @@ public:
       double xshift = 0.0,
       double yshift = 0.0,
       bool is_local_goal_function = false,
+	  // tyu-控制score方式，默认采用最后一个值，评价局部轨迹
       CostAggregationType aggregationType = Last);
 
   ~MapGridCostFunction() {}

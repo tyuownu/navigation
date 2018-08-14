@@ -54,41 +54,48 @@ namespace dwa_local_planner {
 
     boost::mutex::scoped_lock l(configuration_mutex_);
 
+	// tyu-parameter from dwa_local_planner/cfg/DWAPlanner.cfg
     generator_.setParameters(
-        config.sim_time,
-        config.sim_granularity,
-        config.angular_sim_granularity,
-        config.use_dwa,
+        config.sim_time,                         // default: 1.7
+        config.sim_granularity,                  // default: 0.025
+        config.angular_sim_granularity,          // default: 0.1
+        config.use_dwa,                          // default: True
         sim_period_);
 
     double resolution = planner_util_->getCostmap()->getResolution();
-    pdist_scale_ = config.path_distance_bias;
+    pdist_scale_ = config.path_distance_bias;                             // default: 32.0
     // pdistscale used for both path and alignment, set  forward_point_distance to zero to discard alignment
     path_costs_.setScale(resolution * pdist_scale_ * 0.5);
     alignment_costs_.setScale(resolution * pdist_scale_ * 0.5);
 
-    gdist_scale_ = config.goal_distance_bias;
+    gdist_scale_ = config.goal_distance_bias;                             // default: 24.0
     goal_costs_.setScale(resolution * gdist_scale_ * 0.5);
     goal_front_costs_.setScale(resolution * gdist_scale_ * 0.5);
 
-    occdist_scale_ = config.occdist_scale;
+    occdist_scale_ = config.occdist_scale;                                // default: 0.01
     obstacle_costs_.setScale(resolution * occdist_scale_);
 
-    stop_time_buffer_ = config.stop_time_buffer;
+    stop_time_buffer_ = config.stop_time_buffer;                          // default: 0.2
+	// config.oscillation_reset_dist: 0.05
+	// config.oscillation_reset_angle: 0.2
     oscillation_costs_.setOscillationResetDist(config.oscillation_reset_dist, config.oscillation_reset_angle);
-    forward_point_distance_ = config.forward_point_distance;
+    forward_point_distance_ = config.forward_point_distance;              // default: 0.325
     goal_front_costs_.setXShift(forward_point_distance_);
     alignment_costs_.setXShift(forward_point_distance_);
  
     // obstacle costs can vary due to scaling footprint feature
+	// config.max_trans_vel: 0.55
+	// config.max_scaling_factor: 0.2
+	// config.scaling_speed: 0.25
     obstacle_costs_.setParams(config.max_trans_vel, config.max_scaling_factor, config.scaling_speed);
 
+	// config.twirling_scale: 0.0
     twirling_costs_.setScale(config.twirling_scale);
 
     int vx_samp, vy_samp, vth_samp;
-    vx_samp = config.vx_samples;
-    vy_samp = config.vy_samples;
-    vth_samp = config.vtheta_samples;
+    vx_samp = config.vx_samples;          // default: 3
+    vy_samp = config.vy_samples;          // default: 10
+    vth_samp = config.vtheta_samples;        // default: 20
  
     if (vx_samp <= 0) {
       ROS_WARN("You've specified that you don't want any samples in the x dimension. We'll at least assume that you want to sample one value... so we're going to set vx_samples to 1 instead");
@@ -131,6 +138,8 @@ namespace dwa_local_planner {
     //Assuming this planner is being run within the navigation stack, we can
     //just do an upward search for the frequency at which its being run. This
     //also allows the frequency to be overwritten locally.
+	// tyu-controller_frequency可以控制sim_period_的值
+	// tyu-controller_frequency默认值: 20.0, sim_period_: 0.05
     std::string controller_frequency_param_name;
     if(!private_nh.searchParam("controller_frequency", controller_frequency_param_name)) {
       sim_period_ = 0.05;
@@ -148,20 +157,24 @@ namespace dwa_local_planner {
 
     oscillation_costs_.resetOscillationFlags();
 
+	// tyu-在障碍物cost上是否设置求和，默认值: false
     bool sum_scores;
     private_nh.param("sum_scores", sum_scores, false);
     obstacle_costs_.setSumScores(sum_scores);
 
 
+	// tyu-publish_cost_grid_pc: 默认值false
     private_nh.param("publish_cost_grid_pc", publish_cost_grid_pc_, false);
     map_viz_.initialize(name, planner_util->getGlobalFrame(), boost::bind(&DWAPlanner::getCellCosts, this, _1, _2, _3, _4, _5, _6));
 
+    // tyu-frame_id: odom
     std::string frame_id;
     private_nh.param("global_frame_id", frame_id, std::string("odom"));
 
     traj_cloud_ = new pcl::PointCloud<base_local_planner::MapGridCostPoint>;
     traj_cloud_->header.frame_id = frame_id;
     traj_cloud_pub_.advertise(private_nh, "trajectory_cloud", 1);
+	// tyu-可以通过publish_traj_pc控制输出轨迹是否显示,默认值: false
     private_nh.param("publish_traj_pc", publish_traj_pc_, false);
 
     // set up all the cost functions that will be applied in order
@@ -181,6 +194,7 @@ namespace dwa_local_planner {
 
     scored_sampling_planner_ = base_local_planner::SimpleScoredSamplingPlanner(generator_list, critics);
 
+	// tyu-cheat_factor: 默认值为1.0，应该是个系数因子
     private_nh.param("cheat_factor", cheat_factor_, 1.0);
   }
 
@@ -206,6 +220,7 @@ namespace dwa_local_planner {
 
   bool DWAPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
     oscillation_costs_.resetOscillationFlags();
+    // tyu-调用LocalPlannerUtil的setPlan
     return planner_util_->setPlan(orig_global_plan);
   }
 
@@ -255,8 +270,10 @@ namespace dwa_local_planner {
     goal_costs_.setTargetPoses(global_plan_);
 
     // alignment costs
+	// tyu-local costmap的目标点,goal_pose
     geometry_msgs::PoseStamped goal_pose = global_plan_.back();
 
+	// tyu-pos是当前机器人位置(x,y,yaw)
     Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
     double sq_dist =
         (pos[0] - goal_pose.pose.position.x) * (pos[0] - goal_pose.pose.position.x) +
@@ -275,6 +292,9 @@ namespace dwa_local_planner {
       sin(angle_to_goal);
 
     goal_front_costs_.setTargetPoses(front_global_plan);
+
+	// tyu-front_global_plan与global_plan_只是在于最后一个点的位置不一样
+	// tyu-front_global_plan最后一个点位于用forward_point_distance_沿着斜率扩展后的点
     
     // keeping the nose on the path
     if (sq_dist > forward_point_distance_ * forward_point_distance_ * cheat_factor_) {
@@ -284,6 +304,7 @@ namespace dwa_local_planner {
       alignment_costs_.setTargetPoses(global_plan_);
     } else {
       // once we are close to goal, trying to keep the nose close to anything destabilizes behavior.
+		// tyu-当离机器人很近的时候，要去除alignment_costs_的影响
       alignment_costs_.setScale(0.0);
     }
   }
@@ -291,6 +312,7 @@ namespace dwa_local_planner {
 
   /*
    * given the current state of the robot, find a good trajectory
+   * 局部路径寻找最佳路径
    */
   base_local_planner::Trajectory DWAPlanner::findBestPath(
       tf::Stamped<tf::Pose> global_pose,
@@ -303,6 +325,10 @@ namespace dwa_local_planner {
     //make sure that our configuration doesn't change mid-run
     boost::mutex::scoped_lock l(configuration_mutex_);
 
+	// tyu-pos, 机器人当前位姿(x,y,yaw)
+	// tyu-vel, 机器人速度(x,y,yaw)
+	// tyu-goal_pose, 目标点, goal(x,y,yaw)
+	// tyu-limits,一些限制条件
     Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
     Eigen::Vector3f vel(global_vel.getOrigin().getX(), global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation()));
     geometry_msgs::PoseStamped goal_pose = global_plan_.back();
@@ -310,6 +336,8 @@ namespace dwa_local_planner {
     base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
 
     // prepare cost functions and generators for this run
+	// tyu-generator, 轨迹生成器, base_local_planner::SimpleTrajectoryGenerator
+	// tyu-根据速度生成多个轨迹(vx, vy, v_th)
     generator_.initialise(pos,
         vel,
         goal,

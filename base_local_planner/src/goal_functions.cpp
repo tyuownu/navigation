@@ -66,6 +66,7 @@ namespace base_local_planner {
     pub.publish(gui_path);
   }
 
+  // tyu-裁剪plan
   void prunePlan(const tf::Stamped<tf::Pose>& global_pose, std::vector<geometry_msgs::PoseStamped>& plan, std::vector<geometry_msgs::PoseStamped>& global_plan){
     ROS_ASSERT(global_plan.size() >= plan.size());
     std::vector<geometry_msgs::PoseStamped>::iterator it = plan.begin();
@@ -103,6 +104,7 @@ namespace base_local_planner {
     try {
       // get plan_to_global_transform from plan frame to global_frame
       tf::StampedTransform plan_to_global_transform;
+	  // tyu- global_frame: odom, plan_pose.header.frame_id: map
       tf.waitForTransform(global_frame, ros::Time::now(),
                           plan_pose.header.frame_id, plan_pose.header.stamp,
                           plan_pose.header.frame_id, ros::Duration(0.5));
@@ -123,6 +125,8 @@ namespace base_local_planner {
       double sq_dist = 0;
 
       //we need to loop to a point on the plan that is within a certain distance of the robot
+	  // tyu-寻找在local costmap中的目标点,这个基本相当于空循环，但是对于长距离的global trajectory
+	  // tyu-这个可以去除前面部分的无效路径
       while(i < (unsigned int)global_plan.size()) {
         double x_diff = robot_pose.getOrigin().x() - global_plan[i].pose.position.x;
         double y_diff = robot_pose.getOrigin().y() - global_plan[i].pose.position.y;

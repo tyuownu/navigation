@@ -73,6 +73,7 @@ bool ObstacleCostFunction::prepare() {
 
 double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
   double cost = 0;
+  // tyu-这个scale实际上并没有发挥作用
   double scale = getScalingFactor(traj, scaling_speed_, max_trans_vel_, max_scaling_factor_);
   double px, py, pth;
   if (footprint_spec_.size() == 0) {
@@ -83,6 +84,8 @@ double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
 
   for (unsigned int i = 0; i < traj.getPointsSize(); ++i) {
     traj.getPoint(i, px, py, pth);
+	// tyu-world_model_是CostmapModel类型
+	// tyu-px,py,pth轨迹上的点坐标
     double f_cost = footprintCost(px, py, pth,
         scale, footprint_spec_,
         costmap_, world_model_);
@@ -91,6 +94,7 @@ double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
         return f_cost;
     }
 
+	// tyu-sum_scores_ 默认值为false
     if(sum_scores_)
         cost +=  f_cost;
     else
@@ -137,6 +141,7 @@ double ObstacleCostFunction::footprintCost (
   }
 
   double occ_cost = std::max(std::max(0.0, footprint_cost), double(costmap->getCost(cell_x, cell_y)));
+
 
   return occ_cost;
 }

@@ -142,6 +142,7 @@ protected:
 
   unsigned int next_sample_index_;
   // to store sample params of each sample between init and generation
+  // tyu-用来保存生成的(vx, vy, v_th)
   std::vector<Eigen::Vector3f> sample_params_;
   base_local_planner::LocalPlannerLimits* limits_;
   Eigen::Vector3f pos_;

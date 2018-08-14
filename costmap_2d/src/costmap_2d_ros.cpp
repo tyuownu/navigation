@@ -100,17 +100,21 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
 
   // check if we want a rolling window version of the costmap
   bool rolling_window, track_unknown_space, always_send_full_costmap;
+  // tyu-rolling_window对于local costmap是true，global costmap是false(一般是这样设置)
   private_nh.param("rolling_window", rolling_window, false);
+  // tyu-会影响到costmap_的初始化
   private_nh.param("track_unknown_space", track_unknown_space, false);
   private_nh.param("always_send_full_costmap", always_send_full_costmap, false);
 
   layered_costmap_ = new LayeredCostmap(global_frame_, rolling_window, track_unknown_space);
 
+  // tyu-默认的这里面会设置"plugins"参数
   if (!private_nh.hasParam("plugins"))
   {
     resetOldParameters(private_nh);
   }
 
+  // tyu-到了这里开始，每个layer开始调用initialize
   if (private_nh.hasParam("plugins"))
   {
     XmlRpc::XmlRpcValue my_list;

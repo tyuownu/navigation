@@ -102,6 +102,7 @@ bool LocalPlannerUtil::setPlan(const std::vector<geometry_msgs::PoseStamped>& or
   return true;
 }
 
+// tyu-getLocalPlan: 从全局轨迹中找出在局部地图内的全局轨迹，作为DWA等算法的global trajectory
 bool LocalPlannerUtil::getLocalPlan(tf::Stamped<tf::Pose>& global_pose, std::vector<geometry_msgs::PoseStamped>& transformed_plan) {
   //get the global plan in our frame
   if(!base_local_planner::transformGlobalPlan(
@@ -114,8 +115,23 @@ bool LocalPlannerUtil::getLocalPlan(tf::Stamped<tf::Pose>& global_pose, std::vec
     ROS_WARN("Could not transform the global plan to the frame of the controller");
     return false;
   }
+  // tyu-global_plan_是全局路径规划，而transformed_plan与global_plan_类似，但是会由于map->odom之间的变换关系变化，有稍许不同(在local costmap范围内)
+  // tyu-global_pose每一下都会有所不同，代表了机器人当前位置
+  /* tyu-
+  ROS_INFO_STREAM("global pose: " << global_pose.getOrigin().x() << ", " << global_pose.getOrigin().y());
+  ROS_INFO_STREAM("global_plan_ size: " << global_plan_.size());
+  for ( size_t i = 0; i < global_plan_.size() ; ++i) {
+	  ROS_INFO_STREAM("x: " << global_plan_[i].pose.position.x << ",y: " << global_plan_[i].pose.position.y);
+  }
+  ROS_INFO_STREAM("transformed_plan size: " << transformed_plan.size());
+  for ( size_t i = 0; i < transformed_plan.size() ; ++i) {
+	  ROS_INFO_STREAM("x: " << transformed_plan[i].pose.position.x << ",y: " << transformed_plan[i].pose.position.y);
+  }
+  */
 
   //now we'll prune the plan based on the position of the robot
+  // tyu-修剪plan，default: false
+  // 看代码，裁掉了开始部分离中心在1m开外的点.
   if(limits_.prune_plan) {
     base_local_planner::prunePlan(global_pose, transformed_plan, global_plan_);
   }
