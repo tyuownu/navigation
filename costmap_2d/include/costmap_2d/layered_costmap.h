@@ -44,17 +44,15 @@
 #include <vector>
 #include <string>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 class Layer;
 
 /**
  * @class LayeredCostmap
  * @brief Instantiates different layer plugins and aggregates them into one score
  */
-class LayeredCostmap
-{
-public:
+class LayeredCostmap {
+ public:
   /**
    * @brief  Constructor for a costmap
    */
@@ -71,16 +69,14 @@ public:
    */
   void updateMap(double robot_x, double robot_y, double robot_yaw);
 
-  std::string getGlobalFrameID() const
-  {
+  std::string getGlobalFrameID() const {
     return global_frame_;
   }
 
-  void resizeMap(unsigned int size_x, unsigned int size_y, double resolution, double origin_x, double origin_y,
-                 bool size_locked = false);
+  void resizeMap(unsigned int size_x, unsigned int size_y, double resolution,
+      double origin_x, double origin_y, bool size_locked = false);
 
-  void getUpdatedBounds(double& minx, double& miny, double& maxx, double& maxy)
-  {
+  void getUpdatedBounds(double& minx, double& miny, double& maxx, double& maxy) {
     minx = minx_;
     miny = miny_;
     maxx = maxx_;
@@ -89,47 +85,39 @@ public:
 
   bool isCurrent();
 
-  Costmap2D* getCostmap()
-  {
+  Costmap2D* getCostmap() {
     return &costmap_;
   }
 
-  bool isRolling()
-  {
+  bool isRolling() {
     return rolling_window_;
   }
 
-  bool isTrackingUnknown()
-  {
+  bool isTrackingUnknown() {
     return costmap_.getDefaultValue() == costmap_2d::NO_INFORMATION;
   }
 
-  std::vector<boost::shared_ptr<Layer> >* getPlugins()
-  {
+  std::vector<boost::shared_ptr<Layer> >* getPlugins() {
     return &plugins_;
   }
 
-  void addPlugin(boost::shared_ptr<Layer> plugin)
-  {
+  void addPlugin(boost::shared_ptr<Layer> plugin) {
     plugins_.push_back(plugin);
   }
 
-  bool isSizeLocked()
-  {
+  bool isSizeLocked() {
     return size_locked_;
   }
 
-  void getBounds(unsigned int* x0, unsigned int* xn, unsigned int* y0, unsigned int* yn)
-  {
+  void getBounds(unsigned int* x0, unsigned int* xn, unsigned int* y0, unsigned int* yn) {
     *x0 = bx0_;
     *xn = bxn_;
     *y0 = by0_;
     *yn = byn_;
   }
 
-  bool isInitialized()
-  {
-      return initialized_;
+  bool isInitialized() {
+    return initialized_;
   }
 
   /** @brief Updates the stored footprint, updates the circumscribed
@@ -154,7 +142,7 @@ public:
    * This is updated by setFootprint(). */
   double getInscribedRadius() { return inscribed_radius_; }
 
-private:
+ private:
   Costmap2D costmap_;
   std::string global_frame_;
 

@@ -53,21 +53,23 @@ void OscillationCostFunction::setOscillationResetDist(double dist, double angle)
   oscillation_reset_angle_ = angle;
 }
 
-void OscillationCostFunction::updateOscillationFlags(Eigen::Vector3f pos, base_local_planner::Trajectory* traj, double min_vel_trans) {
+void OscillationCostFunction::updateOscillationFlags(Eigen::Vector3f pos,
+    base_local_planner::Trajectory* traj, double min_vel_trans) {
   if (traj->cost_ >= 0) {
     if (setOscillationFlags(traj, min_vel_trans)) {
       prev_stationary_pos_ = pos;
     }
     //if we've got restrictions... check if we can reset any oscillation flags
-    if(forward_pos_only_ || forward_neg_only_
+    if (forward_pos_only_ || forward_neg_only_
         || strafe_pos_only_ || strafe_neg_only_
-        || rot_pos_only_ || rot_neg_only_){
+        || rot_pos_only_ || rot_neg_only_) {
       resetOscillationFlagsIfPossible(pos, prev_stationary_pos_);
     }
   }
 }
 
-void OscillationCostFunction::resetOscillationFlagsIfPossible(const Eigen::Vector3f& pos, const Eigen::Vector3f& prev) {
+void OscillationCostFunction::resetOscillationFlagsIfPossible(const Eigen::Vector3f& pos,
+    const Eigen::Vector3f& prev) {
   double x_diff = pos[0] - prev[0];
   double y_diff = pos[1] - prev[1];
   double sq_dist = x_diff * x_diff + y_diff * y_diff;
@@ -98,7 +100,8 @@ void OscillationCostFunction::resetOscillationFlags() {
   forward_neg_ = false;
 }
 
-bool OscillationCostFunction::setOscillationFlags(base_local_planner::Trajectory* t, double min_vel_trans) {
+bool OscillationCostFunction::setOscillationFlags(base_local_planner::Trajectory* t,
+    double min_vel_trans) {
   bool flag_set = false;
   //set oscillation flags for moving forward and backward
   if (t->xv_ < 0.0) {
@@ -109,6 +112,7 @@ bool OscillationCostFunction::setOscillationFlags(base_local_planner::Trajectory
     forward_pos_ = false;
     forward_neg_ = true;
   }
+
   if (t->xv_ > 0.0) {
     if (forward_neg_) {
       forward_pos_only_ = true;

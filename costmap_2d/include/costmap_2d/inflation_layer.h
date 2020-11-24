@@ -45,15 +45,13 @@
 #include <dynamic_reconfigure/server.h>
 #include <boost/thread.hpp>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 /**
  * @class CellData
  * @brief Storage for cell information used during obstacle inflation
  */
-class CellData
-{
-public:
+class CellData {
+ public:
   /**
    * @brief  Constructor for a CellData objects
    * @param  i The index of the cell in the cost map
@@ -63,33 +61,31 @@ public:
    * @param  sy The y coordinate of the closest obstacle cell in the costmap
    * @return
    */
-  CellData(double i, unsigned int x, unsigned int y, unsigned int sx, unsigned int sy) :
-      index_(i), x_(x), y_(y), src_x_(sx), src_y_(sy)
-  {
-  }
+  CellData(double i, unsigned int x, unsigned int y,
+      unsigned int sx, unsigned int sy) :
+      index_(i), x_(x), y_(y), src_x_(sx), src_y_(sy) { }
   unsigned int index_;
   unsigned int x_, y_;
   unsigned int src_x_, src_y_;
 };
 
-class InflationLayer : public Layer
-{
-public:
+class InflationLayer : public Layer {
+ public:
   InflationLayer();
 
-  virtual ~InflationLayer()
-  {
+  virtual ~InflationLayer() {
     deleteKernels();
     if (dsrv_)
         delete dsrv_;
   }
 
   virtual void onInitialize();
-  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
-                            double* max_x, double* max_y);
-  virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
-  virtual bool isDiscretized()
-  {
+  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw,
+      double* min_x, double* min_y,
+      double* max_x, double* max_y);
+  virtual void updateCosts(costmap_2d::Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j);
+  virtual bool isDiscretized() {
     return true;
   }
   virtual void matchSize();
@@ -99,15 +95,13 @@ public:
   /** @brief  Given a distance, compute a cost.
    * @param  distance The distance from an obstacle in cells
    * @return A cost value for the distance */
-  inline unsigned char computeCost(double distance) const
-  {
+  inline unsigned char computeCost(double distance) const {
     unsigned char cost = 0;
     if (distance == 0)
       cost = LETHAL_OBSTACLE;
     else if (distance * resolution_ <= inscribed_radius_)
       cost = INSCRIBED_INFLATED_OBSTACLE;
-    else
-    {
+    else {
       // make sure cost falls off by Euclidean distance
       double euclidean_distance = distance * resolution_;
       double factor = exp(-1.0 * weight_ * (euclidean_distance - inscribed_radius_));
@@ -123,11 +117,11 @@ public:
    */
   void setInflationParameters(double inflation_radius, double cost_scaling_factor);
 
-protected:
+ protected:
   virtual void onFootprintChanged();
   boost::recursive_mutex* inflation_access_;
 
-private:
+ private:
   /**
    * @brief  Lookup pre-computed distances
    * @param mx The x coordinate of the current cell
@@ -136,8 +130,7 @@ private:
    * @param src_y The y coordinate of the source cell
    * @return
    */
-  inline double distanceLookup(int mx, int my, int src_x, int src_y)
-  {
+  inline double distanceLookup(int mx, int my, int src_x, int src_y) {
     unsigned int dx = abs(mx - src_x);
     unsigned int dy = abs(my - src_y);
     return cached_distances_[dx][dy];
@@ -151,8 +144,7 @@ private:
    * @param src_y The y coordinate of the source cell
    * @return
    */
-  inline unsigned char costLookup(int mx, int my, int src_x, int src_y)
-  {
+  inline unsigned char costLookup(int mx, int my, int src_x, int src_y) {
     unsigned int dx = abs(mx - src_x);
     unsigned int dy = abs(my - src_y);
     return cached_costs_[dx][dy];
@@ -162,8 +154,7 @@ private:
   void deleteKernels();
   void inflate_area(int min_i, int min_j, int max_i, int max_j, unsigned char* master_grid);
 
-  unsigned int cellDistance(double world_dist)
-  {
+  unsigned int cellDistance(double world_dist) {
     return layered_costmap_->getCostmap()->cellDistance(world_dist);
   }
 

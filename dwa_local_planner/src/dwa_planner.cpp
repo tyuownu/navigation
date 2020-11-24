@@ -49,355 +49,354 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 namespace dwa_local_planner {
-  void DWAPlanner::reconfigure(DWAPlannerConfig &config)
-  {
+void DWAPlanner::reconfigure(DWAPlannerConfig &config) {
 
-    boost::mutex::scoped_lock l(configuration_mutex_);
+  boost::mutex::scoped_lock l(configuration_mutex_);
 
-    // tyu-parameter from dwa_local_planner/cfg/DWAPlanner.cfg
-    generator_.setParameters(
-        config.sim_time,                         // default: 1.7
-        config.sim_granularity,                  // default: 0.025
-        config.angular_sim_granularity,          // default: 0.1
-        config.use_dwa,                          // default: True
-        sim_period_);
+  // tyu-parameter from dwa_local_planner/cfg/DWAPlanner.cfg
+  generator_.setParameters(
+      config.sim_time,                         // default: 1.7
+      config.sim_granularity,                  // default: 0.025
+      config.angular_sim_granularity,          // default: 0.1
+      config.use_dwa,                          // default: True
+      sim_period_);
 
-    double resolution = planner_util_->getCostmap()->getResolution();
-    pdist_scale_ = config.path_distance_bias;                             // default: 32.0
-    // pdistscale used for both path and alignment, set  forward_point_distance to zero to discard alignment
-    path_costs_.setScale(resolution * pdist_scale_ * 0.5);
-    alignment_costs_.setScale(resolution * pdist_scale_ * 0.5);
+  double resolution = planner_util_->getCostmap()->getResolution();
+  pdist_scale_ = config.path_distance_bias;                             // default: 32.0
+  // pdistscale used for both path and alignment, set  forward_point_distance to zero to discard alignment
+  path_costs_.setScale(resolution * pdist_scale_ * 0.5);
+  alignment_costs_.setScale(resolution * pdist_scale_ * 0.5);
 
-    gdist_scale_ = config.goal_distance_bias;                             // default: 24.0
-    goal_costs_.setScale(resolution * gdist_scale_ * 0.5);
-    goal_front_costs_.setScale(resolution * gdist_scale_ * 0.5);
+  gdist_scale_ = config.goal_distance_bias;                             // default: 24.0
+  goal_costs_.setScale(resolution * gdist_scale_ * 0.5);
+  goal_front_costs_.setScale(resolution * gdist_scale_ * 0.5);
 
-    occdist_scale_ = config.occdist_scale;                                // default: 0.01
-    obstacle_costs_.setScale(resolution * occdist_scale_);
+  occdist_scale_ = config.occdist_scale;                                // default: 0.01
+  obstacle_costs_.setScale(resolution * occdist_scale_);
 
-    stop_time_buffer_ = config.stop_time_buffer;                          // default: 0.2
-    // config.oscillation_reset_dist: 0.05
-    // config.oscillation_reset_angle: 0.2
-    oscillation_costs_.setOscillationResetDist(config.oscillation_reset_dist, config.oscillation_reset_angle);
-    forward_point_distance_ = config.forward_point_distance;              // default: 0.325
-    goal_front_costs_.setXShift(forward_point_distance_);
-    alignment_costs_.setXShift(forward_point_distance_);
- 
-    // obstacle costs can vary due to scaling footprint feature
-    // config.max_trans_vel: 0.55
-    // config.max_scaling_factor: 0.2
-    // config.scaling_speed: 0.25
-    obstacle_costs_.setParams(config.max_trans_vel, config.max_scaling_factor, config.scaling_speed);
+  stop_time_buffer_ = config.stop_time_buffer;                          // default: 0.2
+  // config.oscillation_reset_dist: 0.05
+  // config.oscillation_reset_angle: 0.2
+  oscillation_costs_.setOscillationResetDist(config.oscillation_reset_dist, config.oscillation_reset_angle);
+  forward_point_distance_ = config.forward_point_distance;              // default: 0.325
+  goal_front_costs_.setXShift(forward_point_distance_);
+  alignment_costs_.setXShift(forward_point_distance_);
 
-    // config.twirling_scale: 0.0
-    twirling_costs_.setScale(config.twirling_scale);
+  // obstacle costs can vary due to scaling footprint feature
+  // config.max_trans_vel: 0.55
+  // config.max_scaling_factor: 0.2
+  // config.scaling_speed: 0.25
+  obstacle_costs_.setParams(config.max_trans_vel, config.max_scaling_factor, config.scaling_speed);
 
-    int vx_samp, vy_samp, vth_samp;
-    vx_samp = config.vx_samples;          // default: 3
-    vy_samp = config.vy_samples;          // default: 10
-    vth_samp = config.vtheta_samples;        // default: 20
- 
-    if (vx_samp <= 0) {
-      ROS_WARN("You've specified that you don't want any samples in the x dimension. We'll at least assume that you want to sample one value... so we're going to set vx_samples to 1 instead");
-      vx_samp = 1;
-      config.vx_samples = vx_samp;
-    }
- 
-    if (vy_samp <= 0) {
-      ROS_WARN("You've specified that you don't want any samples in the y dimension. We'll at least assume that you want to sample one value... so we're going to set vy_samples to 1 instead");
-      vy_samp = 1;
-      config.vy_samples = vy_samp;
-    }
- 
-    if (vth_samp <= 0) {
-      ROS_WARN("You've specified that you don't want any samples in the th dimension. We'll at least assume that you want to sample one value... so we're going to set vth_samples to 1 instead");
-      vth_samp = 1;
-      config.vtheta_samples = vth_samp;
-    }
- 
-    vsamples_[0] = vx_samp;
-    vsamples_[1] = vy_samp;
-    vsamples_[2] = vth_samp;
- 
+  // config.twirling_scale: 0.0
+  twirling_costs_.setScale(config.twirling_scale);
 
+  int vx_samp, vy_samp, vth_samp;
+  vx_samp = config.vx_samples;          // default: 3
+  vy_samp = config.vy_samples;          // default: 10
+  vth_samp = config.vtheta_samples;        // default: 20
+
+  if (vx_samp <= 0) {
+    ROS_WARN("You've specified that you don't want any samples in the x dimension. We'll at least assume that you want to sample one value... so we're going to set vx_samples to 1 instead");
+    vx_samp = 1;
+    config.vx_samples = vx_samp;
   }
 
-  DWAPlanner::DWAPlanner(std::string name, base_local_planner::LocalPlannerUtil *planner_util) :
-      planner_util_(planner_util),
-      obstacle_costs_(planner_util->getCostmap()),
-      path_costs_(planner_util->getCostmap()),
-      goal_costs_(planner_util->getCostmap(), 0.0, 0.0, true),
-      goal_front_costs_(planner_util->getCostmap(), 0.0, 0.0, true),
-      alignment_costs_(planner_util->getCostmap())
-  {
-    ros::NodeHandle private_nh("~/" + name);
+  if (vy_samp <= 0) {
+    ROS_WARN("You've specified that you don't want any samples in the y dimension. We'll at least assume that you want to sample one value... so we're going to set vy_samples to 1 instead");
+    vy_samp = 1;
+    config.vy_samples = vy_samp;
+  }
 
-    goal_front_costs_.setStopOnFailure( false );
-    alignment_costs_.setStopOnFailure( false );
+  if (vth_samp <= 0) {
+    ROS_WARN("You've specified that you don't want any samples in the th dimension. We'll at least assume that you want to sample one value... so we're going to set vth_samples to 1 instead");
+    vth_samp = 1;
+    config.vtheta_samples = vth_samp;
+  }
 
-    //Assuming this planner is being run within the navigation stack, we can
-    //just do an upward search for the frequency at which its being run. This
-    //also allows the frequency to be overwritten locally.
-    // tyu-controller_frequency可以控制sim_period_的值
-    // tyu-controller_frequency默认值: 20.0, sim_period_: 0.05
-    std::string controller_frequency_param_name;
-    if(!private_nh.searchParam("controller_frequency", controller_frequency_param_name)) {
-      sim_period_ = 0.05;
+  vsamples_[0] = vx_samp;
+  vsamples_[1] = vy_samp;
+  vsamples_[2] = vth_samp;
+
+
+}
+
+DWAPlanner::DWAPlanner(std::string name, base_local_planner::LocalPlannerUtil *planner_util) :
+    planner_util_(planner_util),
+    obstacle_costs_(planner_util->getCostmap()),
+    path_costs_(planner_util->getCostmap()),
+    goal_costs_(planner_util->getCostmap(), 0.0, 0.0, true),
+    goal_front_costs_(planner_util->getCostmap(), 0.0, 0.0, true),
+    alignment_costs_(planner_util->getCostmap()) {
+  ros::NodeHandle private_nh("~/" + name);
+
+  goal_front_costs_.setStopOnFailure( false );
+  alignment_costs_.setStopOnFailure( false );
+
+  //Assuming this planner is being run within the navigation stack, we can
+  //just do an upward search for the frequency at which its being run. This
+  //also allows the frequency to be overwritten locally.
+  // tyu-controller_frequency可以控制sim_period_的值
+  // tyu-controller_frequency默认值: 20.0, sim_period_: 0.05
+  std::string controller_frequency_param_name;
+  if (!private_nh.searchParam("controller_frequency", controller_frequency_param_name)) {
+    sim_period_ = 0.05;
+  } else {
+    double controller_frequency = 0;
+    private_nh.param(controller_frequency_param_name, controller_frequency, 20.0);
+    if (controller_frequency > 0) {
+      sim_period_ = 1.0 / controller_frequency;
     } else {
-      double controller_frequency = 0;
-      private_nh.param(controller_frequency_param_name, controller_frequency, 20.0);
-      if(controller_frequency > 0) {
-        sim_period_ = 1.0 / controller_frequency;
-      } else {
-        ROS_WARN("A controller_frequency less than 0 has been set. Ignoring the parameter, assuming a rate of 20Hz");
-        sim_period_ = 0.05;
-      }
+      ROS_WARN("A controller_frequency less than 0 has been set. Ignoring the parameter, assuming a rate of 20Hz");
+      sim_period_ = 0.05;
     }
-    ROS_INFO("Sim period is set to %.2f", sim_period_);
-
-    oscillation_costs_.resetOscillationFlags();
-
-    // tyu-在障碍物cost上是否设置求和，默认值: false
-    bool sum_scores;
-    private_nh.param("sum_scores", sum_scores, false);
-    obstacle_costs_.setSumScores(sum_scores);
-
-
-    // tyu-publish_cost_grid_pc: 默认值false
-    private_nh.param("publish_cost_grid_pc", publish_cost_grid_pc_, false);
-    map_viz_.initialize(name, planner_util->getGlobalFrame(), boost::bind(&DWAPlanner::getCellCosts, this, _1, _2, _3, _4, _5, _6));
-
-    // tyu-frame_id: odom
-    std::string frame_id;
-    private_nh.param("global_frame_id", frame_id, std::string("odom"));
-
-    traj_cloud_ = new pcl::PointCloud<base_local_planner::MapGridCostPoint>;
-    traj_cloud_->header.frame_id = frame_id;
-    traj_cloud_pub_.advertise(private_nh, "trajectory_cloud", 1);
-    // tyu-可以通过publish_traj_pc控制输出轨迹是否显示,默认值: false
-    private_nh.param("publish_traj_pc", publish_traj_pc_, false);
-
-    // set up all the cost functions that will be applied in order
-    // (any function returning negative values will abort scoring, so the order can improve performance)
-    std::vector<base_local_planner::TrajectoryCostFunction*> critics;
-    critics.push_back(&oscillation_costs_); // discards oscillating motions (assisgns cost -1)
-    critics.push_back(&obstacle_costs_); // discards trajectories that move into obstacles
-    critics.push_back(&goal_front_costs_); // prefers trajectories that make the nose go towards (local) nose goal
-    critics.push_back(&alignment_costs_); // prefers trajectories that keep the robot nose on nose path
-    critics.push_back(&path_costs_); // prefers trajectories on global path
-    critics.push_back(&goal_costs_); // prefers trajectories that go towards (local) goal, based on wave propagation
-    critics.push_back(&twirling_costs_); // optionally prefer trajectories that don't spin
-
-    // trajectory generators
-    std::vector<base_local_planner::TrajectorySampleGenerator*> generator_list;
-    generator_list.push_back(&generator_);
-
-    scored_sampling_planner_ = base_local_planner::SimpleScoredSamplingPlanner(generator_list, critics);
-
-    // tyu-cheat_factor: 默认值为1.0，应该是个系数因子
-    private_nh.param("cheat_factor", cheat_factor_, 1.0);
   }
+  ROS_INFO("Sim period is set to %.2f", sim_period_);
 
-  // used for visualization only, total_costs are not really total costs
-  bool DWAPlanner::getCellCosts(int cx, int cy, float &path_cost, float &goal_cost, float &occ_cost, float &total_cost) {
+  oscillation_costs_.resetOscillationFlags();
 
-    path_cost = path_costs_.getCellCosts(cx, cy);
-    goal_cost = goal_costs_.getCellCosts(cx, cy);
-    occ_cost = planner_util_->getCostmap()->getCost(cx, cy);
-    if (path_cost == path_costs_.obstacleCosts() ||
-        path_cost == path_costs_.unreachableCellCosts() ||
-        occ_cost >= costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {
-      return false;
-    }
+  // tyu-在障碍物cost上是否设置求和，默认值: false
+  bool sum_scores;
+  private_nh.param("sum_scores", sum_scores, false);
+  obstacle_costs_.setSumScores(sum_scores);
 
-    double resolution = planner_util_->getCostmap()->getResolution();
-    total_cost =
-        pdist_scale_ * resolution * path_cost +
-        gdist_scale_ * resolution * goal_cost +
-        occdist_scale_ * occ_cost;
-    return true;
-  }
 
-  bool DWAPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
-    oscillation_costs_.resetOscillationFlags();
-    // tyu-调用LocalPlannerUtil的setPlan
-    return planner_util_->setPlan(orig_global_plan);
-  }
+  // tyu-publish_cost_grid_pc: 默认值false
+  private_nh.param("publish_cost_grid_pc", publish_cost_grid_pc_, false);
+  map_viz_.initialize(name, planner_util->getGlobalFrame(),
+      boost::bind(&DWAPlanner::getCellCosts, this, _1, _2, _3, _4, _5, _6));
 
-  /**
-   * This function is used when other strategies are to be applied,
-   * but the cost functions for obstacles are to be reused.
-   */
-  bool DWAPlanner::checkTrajectory(
-      Eigen::Vector3f pos,
-      Eigen::Vector3f vel,
-      Eigen::Vector3f vel_samples){
-    oscillation_costs_.resetOscillationFlags();
-    base_local_planner::Trajectory traj;
-    geometry_msgs::PoseStamped goal_pose = global_plan_.back();
-    Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation));
-    base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
-    generator_.initialise(pos,
-        vel,
-        goal,
-        &limits,
-        vsamples_);
-    generator_.generateTrajectory(pos, vel, vel_samples, traj);
-    double cost = scored_sampling_planner_.scoreTrajectory(traj, -1);
-    //if the trajectory is a legal one... the check passes
-    if(cost >= 0) {
-      return true;
-    }
-    ROS_WARN("Invalid Trajectory %f, %f, %f, cost: %f", vel_samples[0], vel_samples[1], vel_samples[2], cost);
+  // tyu-frame_id: odom
+  std::string frame_id;
+  private_nh.param("global_frame_id", frame_id, std::string("odom"));
 
-    //otherwise the check fails
+  traj_cloud_ = new pcl::PointCloud<base_local_planner::MapGridCostPoint>;
+  traj_cloud_->header.frame_id = frame_id;
+  traj_cloud_pub_.advertise(private_nh, "trajectory_cloud", 1);
+  // tyu-可以通过publish_traj_pc控制输出轨迹是否显示,默认值: false
+  private_nh.param("publish_traj_pc", publish_traj_pc_, false);
+
+  // set up all the cost functions that will be applied in order
+  // (any function returning negative values will abort scoring, so the order can improve performance)
+  std::vector<base_local_planner::TrajectoryCostFunction*> critics;
+  critics.push_back(&oscillation_costs_); // discards oscillating motions (assisgns cost -1)
+  critics.push_back(&obstacle_costs_); // discards trajectories that move into obstacles
+  critics.push_back(&goal_front_costs_); // prefers trajectories that make the nose go towards (local) nose goal
+  critics.push_back(&alignment_costs_); // prefers trajectories that keep the robot nose on nose path
+  critics.push_back(&path_costs_); // prefers trajectories on global path
+  critics.push_back(&goal_costs_); // prefers trajectories that go towards (local) goal, based on wave propagation
+  critics.push_back(&twirling_costs_); // optionally prefer trajectories that don't spin
+
+  // trajectory generators
+  std::vector<base_local_planner::TrajectorySampleGenerator*> generator_list;
+  generator_list.push_back(&generator_);
+
+  scored_sampling_planner_ =
+    base_local_planner::SimpleScoredSamplingPlanner(generator_list, critics);
+
+  // tyu-cheat_factor: 默认值为1.0，应该是个系数因子
+  private_nh.param("cheat_factor", cheat_factor_, 1.0);
+}
+
+// used for visualization only, total_costs are not really total costs
+bool DWAPlanner::getCellCosts(int cx, int cy, float &path_cost, float &goal_cost,
+    float &occ_cost, float &total_cost) {
+
+  path_cost = path_costs_.getCellCosts(cx, cy);
+  goal_cost = goal_costs_.getCellCosts(cx, cy);
+  occ_cost = planner_util_->getCostmap()->getCost(cx, cy);
+  if (path_cost == path_costs_.obstacleCosts() ||
+      path_cost == path_costs_.unreachableCellCosts() ||
+      occ_cost >= costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {
     return false;
   }
 
+  double resolution = planner_util_->getCostmap()->getResolution();
+  total_cost =
+      pdist_scale_ * resolution * path_cost +
+      gdist_scale_ * resolution * goal_cost +
+      occdist_scale_ * occ_cost;
+  return true;
+}
 
-  void DWAPlanner::updatePlanAndLocalCosts(
-      tf::Stamped<tf::Pose> global_pose,
-      const std::vector<geometry_msgs::PoseStamped>& new_plan) {
-    global_plan_.resize(new_plan.size());
-    for (unsigned int i = 0; i < new_plan.size(); ++i) {
-      global_plan_[i] = new_plan[i];
-    }
+bool DWAPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
+  oscillation_costs_.resetOscillationFlags();
+  // tyu-调用LocalPlannerUtil的setPlan
+  return planner_util_->setPlan(orig_global_plan);
+}
 
-    // costs for going away from path
-    path_costs_.setTargetPoses(global_plan_);
+/**
+ * This function is used when other strategies are to be applied,
+ * but the cost functions for obstacles are to be reused.
+ */
+bool DWAPlanner::checkTrajectory(
+    Eigen::Vector3f pos,
+    Eigen::Vector3f vel,
+    Eigen::Vector3f vel_samples) {
+  oscillation_costs_.resetOscillationFlags();
+  base_local_planner::Trajectory traj;
+  geometry_msgs::PoseStamped goal_pose = global_plan_.back();
+  Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y,
+      tf::getYaw(goal_pose.pose.orientation));
+  base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
+  generator_.initialise(pos, vel, goal, &limits, vsamples_);
+  generator_.generateTrajectory(pos, vel, vel_samples, traj);
+  double cost = scored_sampling_planner_.scoreTrajectory(traj, -1);
+  //if the trajectory is a legal one... the check passes
+  if (cost >= 0) {
+    return true;
+  }
+  ROS_WARN("Invalid Trajectory %f, %f, %f, cost: %f",
+      vel_samples[0], vel_samples[1], vel_samples[2], cost);
 
-    // costs for not going towards the local goal as much as possible
-    goal_costs_.setTargetPoses(global_plan_);
+  //otherwise the check fails
+  return false;
+}
 
-    // alignment costs
-    // tyu-local costmap的目标点,goal_pose
-    geometry_msgs::PoseStamped goal_pose = global_plan_.back();
 
-    // tyu-pos是当前机器人位置(x,y,yaw)
-    Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
-    double sq_dist =
-        (pos[0] - goal_pose.pose.position.x) * (pos[0] - goal_pose.pose.position.x) +
-        (pos[1] - goal_pose.pose.position.y) * (pos[1] - goal_pose.pose.position.y);
-
-    // we want the robot nose to be drawn to its final position
-    // (before robot turns towards goal orientation), not the end of the
-    // path for the robot center. Choosing the final position after
-    // turning towards goal orientation causes instability when the
-    // robot needs to make a 180 degree turn at the end
-    std::vector<geometry_msgs::PoseStamped> front_global_plan = global_plan_;
-    double angle_to_goal = atan2(goal_pose.pose.position.y - pos[1], goal_pose.pose.position.x - pos[0]);
-    front_global_plan.back().pose.position.x = front_global_plan.back().pose.position.x +
-      forward_point_distance_ * cos(angle_to_goal);
-    front_global_plan.back().pose.position.y = front_global_plan.back().pose.position.y + forward_point_distance_ *
-      sin(angle_to_goal);
-
-    goal_front_costs_.setTargetPoses(front_global_plan);
-
-    // tyu-front_global_plan与global_plan_只是在于最后一个点的位置不一样
-    // tyu-front_global_plan最后一个点位于用forward_point_distance_沿着斜率扩展后的点
-    
-    // keeping the nose on the path
-    if (sq_dist > forward_point_distance_ * forward_point_distance_ * cheat_factor_) {
-      double resolution = planner_util_->getCostmap()->getResolution();
-      alignment_costs_.setScale(resolution * pdist_scale_ * 0.5);
-      // costs for robot being aligned with path (nose on path, not ju
-      alignment_costs_.setTargetPoses(global_plan_);
-    } else {
-      // once we are close to goal, trying to keep the nose close to anything destabilizes behavior.
-        // tyu-当离机器人很近的时候，要去除alignment_costs_的影响
-      alignment_costs_.setScale(0.0);
-    }
+void DWAPlanner::updatePlanAndLocalCosts(
+    tf::Stamped<tf::Pose> global_pose,
+    const std::vector<geometry_msgs::PoseStamped>& new_plan) {
+  global_plan_.resize(new_plan.size());
+  for (unsigned int i = 0; i < new_plan.size(); ++i) {
+    global_plan_[i] = new_plan[i];
   }
 
+  // costs for going away from path
+  path_costs_.setTargetPoses(global_plan_);
 
-  /*
-   * given the current state of the robot, find a good trajectory
-   * 局部路径寻找最佳路径
-   */
-  base_local_planner::Trajectory DWAPlanner::findBestPath(
-      tf::Stamped<tf::Pose> global_pose,
-      tf::Stamped<tf::Pose> global_vel,
-      tf::Stamped<tf::Pose>& drive_velocities,
-      std::vector<geometry_msgs::Point> footprint_spec) {
+  // costs for not going towards the local goal as much as possible
+  goal_costs_.setTargetPoses(global_plan_);
 
-    obstacle_costs_.setFootprint(footprint_spec);
+  // alignment costs
+  // tyu-local costmap的目标点,goal_pose
+  geometry_msgs::PoseStamped goal_pose = global_plan_.back();
 
-    //make sure that our configuration doesn't change mid-run
-    boost::mutex::scoped_lock l(configuration_mutex_);
+  // tyu-pos是当前机器人位置(x,y,yaw)
+  Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(),
+      tf::getYaw(global_pose.getRotation()));
+  double sq_dist =
+      (pos[0] - goal_pose.pose.position.x) * (pos[0] - goal_pose.pose.position.x) +
+      (pos[1] - goal_pose.pose.position.y) * (pos[1] - goal_pose.pose.position.y);
 
-    // tyu-pos, 机器人当前位姿(x,y,yaw)
-    // tyu-vel, 机器人速度(x,y,yaw)
-    // tyu-goal_pose, 目标点, goal(x,y,yaw)
-    // tyu-limits,一些限制条件
-    Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
-    Eigen::Vector3f vel(global_vel.getOrigin().getX(), global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation()));
-    geometry_msgs::PoseStamped goal_pose = global_plan_.back();
-    Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation));
-    base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
+  // we want the robot nose to be drawn to its final position
+  // (before robot turns towards goal orientation), not the end of the
+  // path for the robot center. Choosing the final position after
+  // turning towards goal orientation causes instability when the
+  // robot needs to make a 180 degree turn at the end
+  std::vector<geometry_msgs::PoseStamped> front_global_plan = global_plan_;
+  double angle_to_goal = atan2(goal_pose.pose.position.y - pos[1], goal_pose.pose.position.x - pos[0]);
+  front_global_plan.back().pose.position.x = front_global_plan.back().pose.position.x +
+    forward_point_distance_ * cos(angle_to_goal);
+  front_global_plan.back().pose.position.y = front_global_plan.back().pose.position.y + forward_point_distance_ *
+    sin(angle_to_goal);
 
-    // prepare cost functions and generators for this run
-    // tyu-generator, 轨迹生成器, base_local_planner::SimpleTrajectoryGenerator
-    // tyu-根据速度生成多个轨迹(vx, vy, v_th)
-    generator_.initialise(pos,
-        vel,
-        goal,
-        &limits,
-        vsamples_);
+  goal_front_costs_.setTargetPoses(front_global_plan);
 
-    result_traj_.cost_ = -7;
-    // find best trajectory by sampling and scoring the samples
-    std::vector<base_local_planner::Trajectory> all_explored;
-    scored_sampling_planner_.findBestTrajectory(result_traj_, &all_explored);
+  // tyu-front_global_plan与global_plan_只是在于最后一个点的位置不一样
+  // tyu-front_global_plan最后一个点位于用forward_point_distance_沿着斜率扩展后的点
 
-    if(publish_traj_pc_)
-    {
-        base_local_planner::MapGridCostPoint pt;
-        traj_cloud_->points.clear();
-        traj_cloud_->width = 0;
-        traj_cloud_->height = 0;
-        std_msgs::Header header;
-        pcl_conversions::fromPCL(traj_cloud_->header, header);
-        header.stamp = ros::Time::now();
-        traj_cloud_->header = pcl_conversions::toPCL(header);
-        for(std::vector<base_local_planner::Trajectory>::iterator t=all_explored.begin(); t != all_explored.end(); ++t)
-        {
-            if(t->cost_<0)
-                continue;
-            // Fill out the plan
-            for(unsigned int i = 0; i < t->getPointsSize(); ++i) {
-                double p_x, p_y, p_th;
-                t->getPoint(i, p_x, p_y, p_th);
-                pt.x=p_x;
-                pt.y=p_y;
-                pt.z=0;
-                pt.path_cost=p_th;
-                pt.total_cost=t->cost_;
-                traj_cloud_->push_back(pt);
-            }
-        }
-        traj_cloud_pub_.publish(*traj_cloud_);
-    }
-
-    // verbose publishing of point clouds
-    if (publish_cost_grid_pc_) {
-      //we'll publish the visualization of the costs to rviz before returning our best trajectory
-      map_viz_.publishCostCloud(planner_util_->getCostmap());
-    }
-
-    // debrief stateful scoring functions
-    oscillation_costs_.updateOscillationFlags(pos, &result_traj_, planner_util_->getCurrentLimits().min_trans_vel);
-
-    //if we don't have a legal trajectory, we'll just command zero
-    if (result_traj_.cost_ < 0) {
-      drive_velocities.setIdentity();
-    } else {
-      tf::Vector3 start(result_traj_.xv_, result_traj_.yv_, 0);
-      drive_velocities.setOrigin(start);
-      tf::Matrix3x3 matrix;
-      matrix.setRotation(tf::createQuaternionFromYaw(result_traj_.thetav_));
-      drive_velocities.setBasis(matrix);
-    }
-
-    return result_traj_;
+  // keeping the nose on the path
+  if (sq_dist > forward_point_distance_ * forward_point_distance_ * cheat_factor_) {
+    double resolution = planner_util_->getCostmap()->getResolution();
+    alignment_costs_.setScale(resolution * pdist_scale_ * 0.5);
+    // costs for robot being aligned with path (nose on path, not ju
+    alignment_costs_.setTargetPoses(global_plan_);
+  } else {
+    // once we are close to goal, trying to keep the nose close to anything destabilizes behavior.
+      // tyu-当离机器人很近的时候，要去除alignment_costs_的影响
+    alignment_costs_.setScale(0.0);
   }
+}
+
+
+/*
+ * given the current state of the robot, find a good trajectory
+ * 局部路径寻找最佳路径
+ */
+base_local_planner::Trajectory DWAPlanner::findBestPath(
+    tf::Stamped<tf::Pose> global_pose,
+    tf::Stamped<tf::Pose> global_vel,
+    tf::Stamped<tf::Pose>& drive_velocities,
+    std::vector<geometry_msgs::Point> footprint_spec) {
+
+  obstacle_costs_.setFootprint(footprint_spec);
+
+  //make sure that our configuration doesn't change mid-run
+  boost::mutex::scoped_lock l(configuration_mutex_);
+
+  // tyu-pos, 机器人当前位姿(x,y,yaw)
+  // tyu-vel, 机器人速度(x,y,yaw)
+  // tyu-goal_pose, 目标点, goal(x,y,yaw)
+  // tyu-limits,一些限制条件
+  Eigen::Vector3f pos(global_pose.getOrigin().getX(),
+      global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
+  Eigen::Vector3f vel(global_vel.getOrigin().getX(),
+      global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation()));
+  geometry_msgs::PoseStamped goal_pose = global_plan_.back();
+  Eigen::Vector3f goal(goal_pose.pose.position.x,
+      goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation));
+  base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
+
+  // prepare cost functions and generators for this run
+  // tyu-generator, 轨迹生成器, base_local_planner::SimpleTrajectoryGenerator
+  // tyu-根据速度生成多个轨迹(vx, vy, v_th)
+  generator_.initialise(pos, vel, goal, &limits, vsamples_);
+
+  result_traj_.cost_ = -7;
+  // find best trajectory by sampling and scoring the samples
+  std::vector<base_local_planner::Trajectory> all_explored;
+  scored_sampling_planner_.findBestTrajectory(result_traj_, &all_explored);
+
+  if (publish_traj_pc_) {
+      base_local_planner::MapGridCostPoint pt;
+      traj_cloud_->points.clear();
+      traj_cloud_->width = 0;
+      traj_cloud_->height = 0;
+      std_msgs::Header header;
+      pcl_conversions::fromPCL(traj_cloud_->header, header);
+      header.stamp = ros::Time::now();
+      traj_cloud_->header = pcl_conversions::toPCL(header);
+      for (std::vector<base_local_planner::Trajectory>::iterator t=all_explored.begin();
+          t != all_explored.end(); ++t) {
+          if (t->cost_<0)
+              continue;
+          // Fill out the plan
+          for (unsigned int i = 0; i < t->getPointsSize(); ++i) {
+              double p_x, p_y, p_th;
+              t->getPoint(i, p_x, p_y, p_th);
+              pt.x=p_x;
+              pt.y=p_y;
+              pt.z=0;
+              pt.path_cost=p_th;
+              pt.total_cost=t->cost_;
+              traj_cloud_->push_back(pt);
+          }
+      }
+      traj_cloud_pub_.publish(*traj_cloud_);
+  }
+
+  // verbose publishing of point clouds
+  if (publish_cost_grid_pc_) {
+    //we'll publish the visualization of the costs to rviz before returning our best trajectory
+    map_viz_.publishCostCloud(planner_util_->getCostmap());
+  }
+
+  // debrief stateful scoring functions
+  oscillation_costs_.updateOscillationFlags(pos, &result_traj_,
+      planner_util_->getCurrentLimits().min_trans_vel);
+
+  //if we don't have a legal trajectory, we'll just command zero
+  if (result_traj_.cost_ < 0) {
+    drive_velocities.setIdentity();
+  } else {
+    tf::Vector3 start(result_traj_.xv_, result_traj_.yv_, 0);
+    drive_velocities.setOrigin(start);
+    tf::Matrix3x3 matrix;
+    matrix.setRotation(tf::createQuaternionFromYaw(result_traj_.thetav_));
+    drive_velocities.setBasis(matrix);
+  }
+
+  return result_traj_;
+}
 };

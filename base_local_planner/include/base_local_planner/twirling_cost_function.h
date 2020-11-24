@@ -50,7 +50,7 @@ namespace base_local_planner {
  * to assign a penalty purely to rotational velocities.
  */
 class TwirlingCostFunction: public base_local_planner::TrajectoryCostFunction {
-public:
+ public:
 
   TwirlingCostFunction() {}
   ~TwirlingCostFunction() {}

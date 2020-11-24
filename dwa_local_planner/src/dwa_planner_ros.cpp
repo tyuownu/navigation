@@ -51,276 +51,276 @@ PLUGINLIB_EXPORT_CLASS(dwa_local_planner::DWAPlannerROS, nav_core::BaseLocalPlan
 
 namespace dwa_local_planner {
 
-  void DWAPlannerROS::reconfigureCB(DWAPlannerConfig &config, uint32_t level) {
-      if (setup_ && config.restore_defaults) {
-        config = default_config_;
-        config.restore_defaults = false;
-      }
-      if ( ! setup_) {
-        default_config_ = config;
-        setup_ = true;
-      }
-
-      // update generic local planner params
-      base_local_planner::LocalPlannerLimits limits;
-      // tyu-from base_local_planner/src/local_planner_limits/__init__.py
-      // tyu-最大运行速度，为实际运行时的速度
-      limits.max_trans_vel = config.max_trans_vel;                       // default: 0.55
-      // tyu-最小运行速度
-      limits.min_trans_vel = config.min_trans_vel;                       // default: 0.1
-      // tyu-采样时的最大速度, x轴
-      limits.max_vel_x = config.max_vel_x;                               // default: 0.55
-      // tyu-采样时的最小速度, x轴
-      limits.min_vel_x = config.min_vel_x;                               // default: 0.0
-      // tyu-采样时的最大速度, y轴
-      limits.max_vel_y = config.max_vel_y;                               // default: 0.1
-      // tyu-采样时的最小速度, y轴
-      limits.min_vel_y = config.min_vel_y;                               // default: -0.1
-      // tyu-这个可以同时控制采样和运行的角速度
-      limits.max_rot_vel = config.max_rot_vel;                           // default: 1.0
-      limits.min_rot_vel = config.min_rot_vel;                           // default: 0.4
-      limits.acc_lim_x = config.acc_lim_x;                               // default: 2.5
-      limits.acc_lim_y = config.acc_lim_y;                               // default: 2.5
-      limits.acc_lim_theta = config.acc_lim_theta;                       // default: 3.2
-      limits.acc_limit_trans = config.acc_limit_trans;                   // default: 0.1
-      limits.xy_goal_tolerance = config.xy_goal_tolerance;               // default: 0.1
-      limits.yaw_goal_tolerance = config.yaw_goal_tolerance;             // default: 0.1
-      limits.prune_plan = config.prune_plan;                             // default: False
-      limits.trans_stopped_vel = config.trans_stopped_vel;               // default: 0.1
-      limits.rot_stopped_vel = config.rot_stopped_vel;                   // default: 0.1
-      planner_util_.reconfigureCB(limits, config.restore_defaults);
-
-      // update dwa specific configuration
-      dp_->reconfigure(config);
+void DWAPlannerROS::reconfigureCB(DWAPlannerConfig &config, uint32_t level) {
+  if (setup_ && config.restore_defaults) {
+    config = default_config_;
+    config.restore_defaults = false;
   }
 
-  DWAPlannerROS::DWAPlannerROS() : initialized_(false),
-      odom_helper_("odom"), setup_(false) {
-
+  if ( ! setup_) {
+    default_config_ = config;
+    setup_ = true;
   }
 
-  void DWAPlannerROS::initialize(
-      std::string name,
-      tf::TransformListener* tf,
-      costmap_2d::Costmap2DROS* costmap_ros) {
-    if (! isInitialized()) {
+  // update generic local planner params
+  base_local_planner::LocalPlannerLimits limits;
+  // tyu-from base_local_planner/src/local_planner_limits/__init__.py
+  // tyu-最大运行速度，为实际运行时的速度
+  limits.max_trans_vel = config.max_trans_vel;                       // default: 0.55
+  // tyu-最小运行速度
+  limits.min_trans_vel = config.min_trans_vel;                       // default: 0.1
+  // tyu-采样时的最大速度, x轴
+  limits.max_vel_x = config.max_vel_x;                               // default: 0.55
+  // tyu-采样时的最小速度, x轴
+  limits.min_vel_x = config.min_vel_x;                               // default: 0.0
+  // tyu-采样时的最大速度, y轴
+  limits.max_vel_y = config.max_vel_y;                               // default: 0.1
+  // tyu-采样时的最小速度, y轴
+  limits.min_vel_y = config.min_vel_y;                               // default: -0.1
+  // tyu-这个可以同时控制采样和运行的角速度
+  limits.max_rot_vel = config.max_rot_vel;                           // default: 1.0
+  limits.min_rot_vel = config.min_rot_vel;                           // default: 0.4
+  limits.acc_lim_x = config.acc_lim_x;                               // default: 2.5
+  limits.acc_lim_y = config.acc_lim_y;                               // default: 2.5
+  limits.acc_lim_theta = config.acc_lim_theta;                       // default: 3.2
+  limits.acc_limit_trans = config.acc_limit_trans;                   // default: 0.1
+  limits.xy_goal_tolerance = config.xy_goal_tolerance;               // default: 0.1
+  limits.yaw_goal_tolerance = config.yaw_goal_tolerance;             // default: 0.1
+  limits.prune_plan = config.prune_plan;                             // default: False
+  limits.trans_stopped_vel = config.trans_stopped_vel;               // default: 0.1
+  limits.rot_stopped_vel = config.rot_stopped_vel;                   // default: 0.1
+  planner_util_.reconfigureCB(limits, config.restore_defaults);
 
-      ros::NodeHandle private_nh("~/" + name);
-      g_plan_pub_ = private_nh.advertise<nav_msgs::Path>("global_plan", 1);
-      l_plan_pub_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
-      tf_ = tf;
-      costmap_ros_ = costmap_ros;
-      costmap_ros_->getRobotPose(current_pose_);
+  // update dwa specific configuration
+  dp_->reconfigure(config);
+}
 
-      // make sure to update the costmap we'll use for this cycle
-      costmap_2d::Costmap2D* costmap = costmap_ros_->getCostmap();
+DWAPlannerROS::DWAPlannerROS() : initialized_(false),
+    odom_helper_("odom"), setup_(false) {
 
-      // tyu-costmap_ros_ frameID: odom
-      // tyu-planner_util_: LocalPlannerUtil
-      planner_util_.initialize(tf, costmap, costmap_ros_->getGlobalFrameID());
+}
 
-      //create the actual planner that we'll use.. it'll configure itself from the parameter server
-      // tyu-dp_: DWAPlanner的shared_ptr指针
-      dp_ = boost::shared_ptr<DWAPlanner>(new DWAPlanner(name, &planner_util_));
+void DWAPlannerROS::initialize( std::string name, tf::TransformListener* tf,
+    costmap_2d::Costmap2DROS* costmap_ros) {
+  if (! isInitialized()) {
 
-      if( private_nh.getParam( "odom_topic", odom_topic_ ))
-      {
-        odom_helper_.setOdomTopic( odom_topic_ );
-      }
-      
-      initialized_ = true;
+    ros::NodeHandle private_nh("~/" + name);
+    g_plan_pub_ = private_nh.advertise<nav_msgs::Path>("global_plan", 1);
+    l_plan_pub_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
+    tf_ = tf;
+    costmap_ros_ = costmap_ros;
+    costmap_ros_->getRobotPose(current_pose_);
 
-      dsrv_ = new dynamic_reconfigure::Server<DWAPlannerConfig>(private_nh);
-      dynamic_reconfigure::Server<DWAPlannerConfig>::CallbackType cb = boost::bind(&DWAPlannerROS::reconfigureCB, this, _1, _2);
-      dsrv_->setCallback(cb);
+    // make sure to update the costmap we'll use for this cycle
+    costmap_2d::Costmap2D* costmap = costmap_ros_->getCostmap();
+
+    // tyu-costmap_ros_ frameID: odom
+    // tyu-planner_util_: LocalPlannerUtil
+    planner_util_.initialize(tf, costmap, costmap_ros_->getGlobalFrameID());
+
+    //create the actual planner that we'll use.. it'll configure itself from the parameter server
+    // tyu-dp_: DWAPlanner的shared_ptr指针
+    dp_ = boost::shared_ptr<DWAPlanner>(new DWAPlanner(name, &planner_util_));
+
+    if ( private_nh.getParam( "odom_topic", odom_topic_ )) {
+      odom_helper_.setOdomTopic( odom_topic_ );
     }
-    else{
-      ROS_WARN("This planner has already been initialized, doing nothing.");
-    }
+
+    initialized_ = true;
+
+    dsrv_ = new dynamic_reconfigure::Server<DWAPlannerConfig>(private_nh);
+    dynamic_reconfigure::Server<DWAPlannerConfig>::CallbackType cb =
+      boost::bind(&DWAPlannerROS::reconfigureCB, this, _1, _2);
+    dsrv_->setCallback(cb);
+  } else {
+    ROS_WARN("This planner has already been initialized, doing nothing.");
   }
-  
-  bool DWAPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
-    if (! isInitialized()) {
-      ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
-      return false;
-    }
-    //when we get a new plan, we also want to clear any latch we may have on goal tolerances
-    latchedStopRotateController_.resetLatching();
+}
 
-    ROS_INFO("Got new plan");
-    // tyu-调用DWAPlanner的setPlan
-    return dp_->setPlan(orig_global_plan);
+bool DWAPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
+  if (! isInitialized()) {
+    ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
+    return false;
+  }
+  //when we get a new plan, we also want to clear any latch we may have on goal tolerances
+  latchedStopRotateController_.resetLatching();
+
+  ROS_INFO("Got new plan");
+  // tyu-调用DWAPlanner的setPlan
+  return dp_->setPlan(orig_global_plan);
+}
+
+/**
+ * @brief 判断机器人是否到达终点
+ *
+ * @return
+ */
+bool DWAPlannerROS::isGoalReached() {
+  if (! isInitialized()) {
+    ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
+    return false;
+  }
+  if ( ! costmap_ros_->getRobotPose(current_pose_)) {
+    ROS_ERROR("Could not get robot pose");
+    return false;
   }
 
-  /**
-   * @brief 判断机器人是否到达终点
-   *
-   * @return 
-   */
-  bool DWAPlannerROS::isGoalReached() {
-    if (! isInitialized()) {
-      ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
-      return false;
-    }
-    if ( ! costmap_ros_->getRobotPose(current_pose_)) {
-      ROS_ERROR("Could not get robot pose");
-      return false;
-    }
-
-    if(latchedStopRotateController_.isGoalReached(&planner_util_, odom_helper_, current_pose_)) {
-      ROS_INFO("Goal reached");
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  void DWAPlannerROS::publishLocalPlan(std::vector<geometry_msgs::PoseStamped>& path) {
-    base_local_planner::publishPlan(path, l_plan_pub_);
-  }
-
-
-  void DWAPlannerROS::publishGlobalPlan(std::vector<geometry_msgs::PoseStamped>& path) {
-    base_local_planner::publishPlan(path, g_plan_pub_);
-  }
-
-  DWAPlannerROS::~DWAPlannerROS(){
-    //make sure to clean things up
-    delete dsrv_;
-  }
-
-
-
-  // tyu-global_pose是机器人当前位姿,cmd_vel为所求的速度
-  bool DWAPlannerROS::dwaComputeVelocityCommands(tf::Stamped<tf::Pose> &global_pose, geometry_msgs::Twist& cmd_vel) {
-    // dynamic window sampling approach to get useful velocity commands
-    if(! isInitialized()){
-      ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
-      return false;
-    }
-
-    tf::Stamped<tf::Pose> robot_vel;
-    // 获得当前里程计的速度值
-    odom_helper_.getRobotVel(robot_vel);
-
-    /* For timing uncomment
-    struct timeval start, end;
-    double start_t, end_t, t_diff;
-    gettimeofday(&start, NULL);
-    */
-
-    //compute what trajectory to drive along
-    // tyu-drive_cmds frame_id_: base_link
-    tf::Stamped<tf::Pose> drive_cmds;
-    drive_cmds.frame_id_ = costmap_ros_->getBaseFrameID();
-    
-    // call with updated footprint
-    // tyu-dwa寻找最佳路径函数
-    base_local_planner::Trajectory path = dp_->findBestPath(global_pose, robot_vel, drive_cmds, costmap_ros_->getRobotFootprint());
-    //ROS_ERROR("Best: %.2f, %.2f, %.2f, %.2f", path.xv_, path.yv_, path.thetav_, path.cost_);
-
-    /* For timing uncomment
-    gettimeofday(&end, NULL);
-    start_t = start.tv_sec + double(start.tv_usec) / 1e6;
-    end_t = end.tv_sec + double(end.tv_usec) / 1e6;
-    t_diff = end_t - start_t;
-    ROS_INFO("Cycle time: %.9f", t_diff);
-    */
-
-    //pass along drive commands
-    // tyu-角速度，正值为左拐，负值为右拐
-    cmd_vel.linear.x = drive_cmds.getOrigin().getX();
-    cmd_vel.linear.y = drive_cmds.getOrigin().getY();
-    cmd_vel.angular.z = tf::getYaw(drive_cmds.getRotation());
-
-    //if we cannot move... tell someone
-    std::vector<geometry_msgs::PoseStamped> local_plan;
-    if(path.cost_ < 0) {
-      ROS_DEBUG_NAMED("dwa_local_planner",
-          "The dwa local planner failed to find a valid plan, cost functions discarded all candidates. This can mean there is an obstacle too close to the robot.");
-      local_plan.clear();
-      publishLocalPlan(local_plan);
-      return false;
-    }
-
-    ROS_DEBUG_NAMED("dwa_local_planner", "A valid velocity command of (%.2f, %.2f, %.2f) was found for this cycle.", 
-                    cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
-
-    // Fill out the local plan
-    for(unsigned int i = 0; i < path.getPointsSize(); ++i) {
-      double p_x, p_y, p_th;
-      path.getPoint(i, p_x, p_y, p_th);
-
-      tf::Stamped<tf::Pose> p =
-              tf::Stamped<tf::Pose>(tf::Pose(
-                      tf::createQuaternionFromYaw(p_th),
-                      tf::Point(p_x, p_y, 0.0)),
-                      ros::Time::now(),
-                      costmap_ros_->getGlobalFrameID());
-      geometry_msgs::PoseStamped pose;
-      tf::poseStampedTFToMsg(p, pose);
-      local_plan.push_back(pose);
-    }
-
-    //publish information to the visualizer
-
-    publishLocalPlan(local_plan);
+  if (latchedStopRotateController_.isGoalReached(&planner_util_, odom_helper_, current_pose_)) {
+    ROS_INFO("Goal reached");
     return true;
+  } else {
+    return false;
+  }
+}
+
+void DWAPlannerROS::publishLocalPlan(std::vector<geometry_msgs::PoseStamped>& path) {
+  base_local_planner::publishPlan(path, l_plan_pub_);
+}
+
+
+void DWAPlannerROS::publishGlobalPlan(std::vector<geometry_msgs::PoseStamped>& path) {
+  base_local_planner::publishPlan(path, g_plan_pub_);
+}
+
+DWAPlannerROS::~DWAPlannerROS(){
+  //make sure to clean things up
+  delete dsrv_;
+}
+
+
+
+// tyu-global_pose是机器人当前位姿,cmd_vel为所求的速度
+bool DWAPlannerROS::dwaComputeVelocityCommands(tf::Stamped<tf::Pose> &global_pose,
+    geometry_msgs::Twist& cmd_vel) {
+  // dynamic window sampling approach to get useful velocity commands
+  if (! isInitialized()) {
+    ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
+    return false;
   }
 
+  tf::Stamped<tf::Pose> robot_vel;
+  // 获得当前里程计的速度值
+  odom_helper_.getRobotVel(robot_vel);
+
+  /* For timing uncomment
+  struct timeval start, end;
+  double start_t, end_t, t_diff;
+  gettimeofday(&start, NULL);
+  */
+
+  //compute what trajectory to drive along
+  // tyu-drive_cmds frame_id_: base_link
+  tf::Stamped<tf::Pose> drive_cmds;
+  drive_cmds.frame_id_ = costmap_ros_->getBaseFrameID();
+
+  // call with updated footprint
+  // tyu-dwa寻找最佳路径函数
+  base_local_planner::Trajectory path = dp_->findBestPath(global_pose,
+      robot_vel, drive_cmds, costmap_ros_->getRobotFootprint());
+  //ROS_ERROR("Best: %.2f, %.2f, %.2f, %.2f", path.xv_, path.yv_, path.thetav_, path.cost_);
+
+  /* For timing uncomment
+  gettimeofday(&end, NULL);
+  start_t = start.tv_sec + double(start.tv_usec) / 1e6;
+  end_t = end.tv_sec + double(end.tv_usec) / 1e6;
+  t_diff = end_t - start_t;
+  ROS_INFO("Cycle time: %.9f", t_diff);
+  */
+
+  //pass along drive commands
+  // tyu-角速度，正值为左拐，负值为右拐
+  cmd_vel.linear.x = drive_cmds.getOrigin().getX();
+  cmd_vel.linear.y = drive_cmds.getOrigin().getY();
+  cmd_vel.angular.z = tf::getYaw(drive_cmds.getRotation());
+
+  //if we cannot move... tell someone
+  std::vector<geometry_msgs::PoseStamped> local_plan;
+  if (path.cost_ < 0) {
+    ROS_DEBUG_NAMED("dwa_local_planner",
+        "The dwa local planner failed to find a valid plan, cost functions discarded all candidates. This can mean there is an obstacle too close to the robot.");
+    local_plan.clear();
+    publishLocalPlan(local_plan);
+    return false;
+  }
+
+  ROS_DEBUG_NAMED("dwa_local_planner", "A valid velocity command of (%.2f, %.2f, %.2f) was found for this cycle.",
+                  cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
+
+  // Fill out the local plan
+  for (unsigned int i = 0; i < path.getPointsSize(); ++i) {
+    double p_x, p_y, p_th;
+    path.getPoint(i, p_x, p_y, p_th);
+
+    tf::Stamped<tf::Pose> p =
+            tf::Stamped<tf::Pose>(tf::Pose(
+                    tf::createQuaternionFromYaw(p_th),
+                    tf::Point(p_x, p_y, 0.0)),
+                    ros::Time::now(),
+                    costmap_ros_->getGlobalFrameID());
+    geometry_msgs::PoseStamped pose;
+    tf::poseStampedTFToMsg(p, pose);
+    local_plan.push_back(pose);
+  }
+
+  //publish information to the visualizer
+
+  publishLocalPlan(local_plan);
+  return true;
+}
 
 
 
-  bool DWAPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
-    // dispatches to either dwa sampling control or stop and rotate control, depending on whether we have been close enough to goal
-    if ( ! costmap_ros_->getRobotPose(current_pose_)) {
-      ROS_ERROR("Could not get robot pose");
-      return false;
-    }
+
+bool DWAPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
+  // dispatches to either dwa sampling control or stop and rotate control, depending on whether we have been close enough to goal
+  if ( ! costmap_ros_->getRobotPose(current_pose_)) {
+    ROS_ERROR("Could not get robot pose");
+    return false;
+  }
+  std::vector<geometry_msgs::PoseStamped> transformed_plan;
+  // tyu-得到local costmap范围内的plan: transformed_plan
+  if ( ! planner_util_.getLocalPlan(current_pose_, transformed_plan)) {
+    ROS_ERROR("Could not get local plan");
+    return false;
+  }
+
+  //if the global plan passed in is empty... we won't do anything
+  if(transformed_plan.empty()) {
+    ROS_WARN_NAMED("dwa_local_planner", "Received an empty transformed plan.");
+    return false;
+  }
+  ROS_DEBUG_NAMED("dwa_local_planner", "Received a transformed plan with %zu points.", transformed_plan.size());
+
+  // update plan in dwa_planner even if we just stop and rotate, to allow checkTrajectory
+  dp_->updatePlanAndLocalCosts(current_pose_, transformed_plan);
+
+  if (latchedStopRotateController_.isPositionReached(&planner_util_, current_pose_)) {
+    //publish an empty plan because we've reached our goal position
+    std::vector<geometry_msgs::PoseStamped> local_plan;
     std::vector<geometry_msgs::PoseStamped> transformed_plan;
-    // tyu-得到local costmap范围内的plan: transformed_plan
-    if ( ! planner_util_.getLocalPlan(current_pose_, transformed_plan)) {
-      ROS_ERROR("Could not get local plan");
-      return false;
-    }
-
-    //if the global plan passed in is empty... we won't do anything
-    if(transformed_plan.empty()) {
-      ROS_WARN_NAMED("dwa_local_planner", "Received an empty transformed plan.");
-      return false;
-    }
-    ROS_DEBUG_NAMED("dwa_local_planner", "Received a transformed plan with %zu points.", transformed_plan.size());
-
-    // update plan in dwa_planner even if we just stop and rotate, to allow checkTrajectory
-    dp_->updatePlanAndLocalCosts(current_pose_, transformed_plan);
-
-    if (latchedStopRotateController_.isPositionReached(&planner_util_, current_pose_)) {
-      //publish an empty plan because we've reached our goal position
-      std::vector<geometry_msgs::PoseStamped> local_plan;
-      std::vector<geometry_msgs::PoseStamped> transformed_plan;
+    publishGlobalPlan(transformed_plan);
+    publishLocalPlan(local_plan);
+    base_local_planner::LocalPlannerLimits limits = planner_util_.getCurrentLimits();
+    return latchedStopRotateController_.computeVelocityCommandsStopRotate(
+        cmd_vel,
+        limits.getAccLimits(),
+        dp_->getSimPeriod(),
+        &planner_util_,
+        odom_helper_,
+        current_pose_,
+        boost::bind(&DWAPlanner::checkTrajectory, dp_, _1, _2, _3));
+  } else {
+    bool isOk = dwaComputeVelocityCommands(current_pose_, cmd_vel);
+    if (isOk) {
       publishGlobalPlan(transformed_plan);
-      publishLocalPlan(local_plan);
-      base_local_planner::LocalPlannerLimits limits = planner_util_.getCurrentLimits();
-      return latchedStopRotateController_.computeVelocityCommandsStopRotate(
-          cmd_vel,
-          limits.getAccLimits(),
-          dp_->getSimPeriod(),
-          &planner_util_,
-          odom_helper_,
-          current_pose_,
-          boost::bind(&DWAPlanner::checkTrajectory, dp_, _1, _2, _3));
     } else {
-      bool isOk = dwaComputeVelocityCommands(current_pose_, cmd_vel);
-      if (isOk) {
-        publishGlobalPlan(transformed_plan);
-      } else {
-        ROS_WARN_NAMED("dwa_local_planner", "DWA planner failed to produce path.");
-        std::vector<geometry_msgs::PoseStamped> empty_plan;
-        publishGlobalPlan(empty_plan);
-      }
-      return isOk;
+      ROS_WARN_NAMED("dwa_local_planner", "DWA planner failed to produce path.");
+      std::vector<geometry_msgs::PoseStamped> empty_plan;
+      publishGlobalPlan(empty_plan);
     }
+    return isOk;
   }
+}
 
 
 };

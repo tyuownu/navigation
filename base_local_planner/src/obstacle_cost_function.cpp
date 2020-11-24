@@ -42,7 +42,7 @@
 
 namespace base_local_planner {
 
-ObstacleCostFunction::ObstacleCostFunction(costmap_2d::Costmap2D* costmap) 
+ObstacleCostFunction::ObstacleCostFunction(costmap_2d::Costmap2D* costmap)
     : costmap_(costmap), sum_scores_(false) {
   if (costmap != NULL) {
     world_model_ = new base_local_planner::CostmapModel(*costmap_);
@@ -56,7 +56,8 @@ ObstacleCostFunction::~ObstacleCostFunction() {
 }
 
 
-void ObstacleCostFunction::setParams(double max_trans_vel, double max_scaling_factor, double scaling_speed) {
+void ObstacleCostFunction::setParams(double max_trans_vel,
+    double max_scaling_factor, double scaling_speed) {
   // TODO: move this to prepare if possible
   max_trans_vel_ = max_trans_vel;
   max_scaling_factor_ = max_scaling_factor;
@@ -103,7 +104,8 @@ double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
   return cost;
 }
 
-double ObstacleCostFunction::getScalingFactor(Trajectory &traj, double scaling_speed, double max_trans_vel, double max_scaling_factor) {
+double ObstacleCostFunction::getScalingFactor(Trajectory &traj,
+    double scaling_speed, double max_trans_vel, double max_scaling_factor) {
   double vmag = hypot(traj.xv_, traj.yv_);
 
   //if we're over a certain speed threshold, we'll scale the robot's
@@ -140,7 +142,8 @@ double ObstacleCostFunction::footprintCost (
     return -7.0;
   }
 
-  double occ_cost = std::max(std::max(0.0, footprint_cost), double(costmap->getCost(cell_x, cell_y)));
+  double occ_cost = std::max(std::max(0.0, footprint_cost),
+      double(costmap->getCost(cell_x, cell_y)));
 
 
   return occ_cost;

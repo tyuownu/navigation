@@ -47,7 +47,7 @@ namespace base_local_planner {
  * @brief Provides an interface for navigation trajectory generators
  */
 class TrajectorySampleGenerator {
-public:
+ public:
 
   /**
    * Whether this generator can create more trajectories
@@ -64,7 +64,7 @@ public:
    */
   virtual ~TrajectorySampleGenerator() {}
 
-protected:
+ protected:
   TrajectorySampleGenerator() {}
 
 };

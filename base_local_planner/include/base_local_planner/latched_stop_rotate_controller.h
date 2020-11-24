@@ -20,7 +20,7 @@
 namespace base_local_planner {
 
 class LatchedStopRotateController {
-public:
+ public:
   LatchedStopRotateController(const std::string& name = "");
   virtual ~LatchedStopRotateController();
 
@@ -80,7 +80,7 @@ public:
                             Eigen::Vector3f vel,
                             Eigen::Vector3f vel_samples)> obstacle_check);
 
-private:
+ private:
   inline double sign(double x){
     return x < 0.0 ? -1.0 : 1.0;
   }

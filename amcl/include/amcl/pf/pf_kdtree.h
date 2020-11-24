@@ -34,8 +34,7 @@
 
 
 // Info for a node in the tree
-typedef struct pf_kdtree_node
-{
+typedef struct pf_kdtree_node {
   // Depth in the tree
   int leaf, depth;
 
@@ -54,13 +53,11 @@ typedef struct pf_kdtree_node
 
   // Child nodes
   struct pf_kdtree_node *children[2];
-
 } pf_kdtree_node_t;
 
 
 // A kd tree
-typedef struct
-{
+typedef struct {
   // Cell size
   double size[3];
 
@@ -73,7 +70,6 @@ typedef struct
 
   // The number of leaf nodes in the tree
   int leaf_count;
-
 } pf_kdtree_t;
 
 

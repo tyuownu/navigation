@@ -50,15 +50,12 @@
 // compute linear index for given map coords
 #define MAP_IDX(sx, i, j) ((sx) * (j) + (i))
 
-namespace map_server
-{
+namespace map_server {
 
-void
-loadMapFromFile(nav_msgs::GetMap::Response* resp,
+void loadMapFromFile(nav_msgs::GetMap::Response* resp,
                 const char* fname, double res, bool negate,
                 double occ_th, double free_th, double* origin,
-                MapMode mode)
-{
+                MapMode mode) {
   SDL_Surface* img;
 
   unsigned char* pixels;
@@ -73,8 +70,7 @@ loadMapFromFile(nav_msgs::GetMap::Response* resp,
   double color_avg;
 
   // Load the image using SDL.  If we get NULL back, the image load failed.
-  if(!(img = IMG_Load(fname)))
-  {
+  if (!(img = IMG_Load(fname))) {
     std::string errmsg = std::string("failed to open image file \"") +
             std::string(fname) + std::string("\"");
     throw std::runtime_error(errmsg);
@@ -111,29 +107,27 @@ loadMapFromFile(nav_msgs::GetMap::Response* resp,
 
   // Copy pixel data into the map structure
   pixels = (unsigned char*)(img->pixels);
-  for(j = 0; j < resp->map.info.height; j++)
-  {
-    for (i = 0; i < resp->map.info.width; i++)
-    {
+  for (j = 0; j < resp->map.info.height; j++) {
+    for (i = 0; i < resp->map.info.width; i++) {
       // Compute mean of RGB for this pixel
       p = pixels + j*rowstride + i*n_channels;
       color_sum = 0;
-      for(k=0;k<avg_channels;k++)
+      for (k = 0; k < avg_channels; k++)
         color_sum += *(p + (k));
       color_avg = color_sum / (double)avg_channels;
 
       if (n_channels == 1)
-          alpha = 1;
+        alpha = 1;
       else
-          alpha = *(p+n_channels-1);
+        alpha = *(p+n_channels-1);
 
-      if(negate)
+      if (negate)
         color_avg = 255 - color_avg;
 
-      if(mode==RAW){
-          value = color_avg;
-          resp->map.data[MAP_IDX(resp->map.info.width,i,resp->map.info.height - j - 1)] = value;
-          continue;
+      if (mode==RAW) {
+        value = color_avg;
+        resp->map.data[MAP_IDX(resp->map.info.width,i,resp->map.info.height - j - 1)] = value;
+        continue;
       }
 
 
@@ -144,11 +138,11 @@ loadMapFromFile(nav_msgs::GetMap::Response* resp,
       // Apply thresholds to RGB means to determine occupancy values for
       // map.  Note that we invert the graphics-ordering of the pixels to
       // produce a map with cell (0,0) in the lower-left corner.
-      if(occ > occ_th)
+      if (occ > occ_th)
         value = +100;
-      else if(occ < free_th)
+      else if (occ < free_th)
         value = 0;
-      else if(mode==TRINARY || alpha < 1.0)
+      else if (mode==TRINARY || alpha < 1.0)
         value = -1;
       else {
         double ratio = (occ - free_th) / (occ_th - free_th);

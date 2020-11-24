@@ -73,23 +73,20 @@ void OdometryHelperRos::getRobotVel(tf::Stamped<tf::Pose>& robot_vel) {
 
     robot_vel.frame_id_ = base_odom_.child_frame_id;
   }
-  robot_vel.setData(tf::Transform(tf::createQuaternionFromYaw(global_vel.angular.z), tf::Vector3(global_vel.linear.x, global_vel.linear.y, 0)));
+  robot_vel.setData(tf::Transform(tf::createQuaternionFromYaw(global_vel.angular.z),
+        tf::Vector3(global_vel.linear.x, global_vel.linear.y, 0)));
   robot_vel.stamp_ = ros::Time();
 }
 
-void OdometryHelperRos::setOdomTopic(std::string odom_topic)
-{
-  if( odom_topic != odom_topic_ )
-  {
+void OdometryHelperRos::setOdomTopic(std::string odom_topic) {
+   if( odom_topic != odom_topic_ ) {
     odom_topic_ = odom_topic;
 
-    if( odom_topic_ != "" )
-    {
+    if ( odom_topic_ != "" ) {
       ros::NodeHandle gn;
-      odom_sub_ = gn.subscribe<nav_msgs::Odometry>( odom_topic_, 1, boost::bind( &OdometryHelperRos::odomCallback, this, _1 ));
-    }
-    else
-    {
+      odom_sub_ = gn.subscribe<nav_msgs::Odometry>( odom_topic_, 1,
+          boost::bind( &OdometryHelperRos::odomCallback, this, _1 ));
+    } else {
       odom_sub_.shutdown();
     }
   }

@@ -50,57 +50,57 @@
 #include <base_local_planner/world_model.h>
 #include <base_local_planner/costmap_model.h>
 
-namespace carrot_planner{
+namespace carrot_planner {
+/**
+ * @class CarrotPlanner
+ * @brief Provides a simple global planner that will compute a valid goal point for the local planner by walking back along the vector between the robot and the user-specified goal point until a valid cost is found.
+ */
+class CarrotPlanner : public nav_core::BaseGlobalPlanner {
+ public:
   /**
-   * @class CarrotPlanner
-   * @brief Provides a simple global planner that will compute a valid goal point for the local planner by walking back along the vector between the robot and the user-specified goal point until a valid cost is found.
+   * @brief  Constructor for the CarrotPlanner
    */
-  class CarrotPlanner : public nav_core::BaseGlobalPlanner {
-    public:
-      /**
-       * @brief  Constructor for the CarrotPlanner
-       */
-      CarrotPlanner();
-      /**
-       * @brief  Constructor for the CarrotPlanner
-       * @param  name The name of this planner
-       * @param  costmap_ros A pointer to the ROS wrapper of the costmap to use for planning
-       */
-      CarrotPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
+  CarrotPlanner();
+  /**
+   * @brief  Constructor for the CarrotPlanner
+   * @param  name The name of this planner
+   * @param  costmap_ros A pointer to the ROS wrapper of the costmap to use for planning
+   */
+  CarrotPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
 
-      /**
-       * @brief  Initialization function for the CarrotPlanner
-       * @param  name The name of this planner
-       * @param  costmap_ros A pointer to the ROS wrapper of the costmap to use for planning
-       */
-      void initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
+  /**
+   * @brief  Initialization function for the CarrotPlanner
+   * @param  name The name of this planner
+   * @param  costmap_ros A pointer to the ROS wrapper of the costmap to use for planning
+   */
+  void initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
 
-      /**
-       * @brief Given a goal pose in the world, compute a plan
-       * @param start The start pose 
-       * @param goal The goal pose 
-       * @param plan The plan... filled by the planner
-       * @return True if a valid plan was found, false otherwise
-       */
-      bool makePlan(const geometry_msgs::PoseStamped& start, 
-          const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan);
+  /**
+   * @brief Given a goal pose in the world, compute a plan
+   * @param start The start pose
+   * @param goal The goal pose
+   * @param plan The plan... filled by the planner
+   * @return True if a valid plan was found, false otherwise
+   */
+  bool makePlan(const geometry_msgs::PoseStamped& start,
+      const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan);
 
-    private:
-      costmap_2d::Costmap2DROS* costmap_ros_;
-      double step_size_, min_dist_from_robot_;
-      costmap_2d::Costmap2D* costmap_;
-      base_local_planner::WorldModel* world_model_; ///< @brief The world model that the controller will use
+ private:
+  costmap_2d::Costmap2DROS* costmap_ros_;
+  double step_size_, min_dist_from_robot_;
+  costmap_2d::Costmap2D* costmap_;
+  base_local_planner::WorldModel* world_model_; ///< @brief The world model that the controller will use
 
-      /**
-       * @brief  Checks the legality of the robot footprint at a position and orientation using the world model
-       * @param x_i The x position of the robot 
-       * @param y_i The y position of the robot 
-       * @param theta_i The orientation of the robot
-       * @return 
-       */
-      double footprintCost(double x_i, double y_i, double theta_i);
+  /**
+   * @brief  Checks the legality of the robot footprint at a position and orientation using the world model
+   * @param x_i The x position of the robot
+   * @param y_i The y position of the robot
+   * @param theta_i The orientation of the robot
+   * @return
+   */
+  double footprintCost(double x_i, double y_i, double theta_i);
 
-      bool initialized_;
-  };
-};  
+  bool initialized_;
+};
+};
 #endif

@@ -48,30 +48,26 @@
 #include <dynamic_reconfigure/server.h>
 #include <pluginlib/class_loader.h>
 
-class SuperValue : public XmlRpc::XmlRpcValue
-{
-public:
-  void setStruct(XmlRpc::XmlRpcValue::ValueStruct* a)
-  {
+class SuperValue : public XmlRpc::XmlRpcValue {
+ public:
+  void setStruct(XmlRpc::XmlRpcValue::ValueStruct* a) {
     _type = TypeStruct;
     _value.asStruct = new XmlRpc::XmlRpcValue::ValueStruct(*a);
   }
-  void setArray(XmlRpc::XmlRpcValue::ValueArray* a)
-  {
+
+  void setArray(XmlRpc::XmlRpcValue::ValueArray* a) {
     _type = TypeArray;
     _value.asArray = new std::vector<XmlRpc::XmlRpcValue>(*a);
   }
 };
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
 /** @brief A ROS wrapper for a 2D Costmap. Handles subscribing to
  * topics that provide observations about obstacles in either the form
  * of PointCloud or LaserScan messages. */
-class Costmap2DROS
-{
-public:
+class Costmap2DROS {
+ public:
   /**
    * @brief  Constructor for the wrapper
    * @param name The name for this costmap
@@ -110,10 +106,9 @@ public:
   void resetLayers();
 
   /** @brief Same as getLayeredCostmap()->isCurrent(). */
-  bool isCurrent()
-    {
-      return layered_costmap_->isCurrent();
-    }
+  bool isCurrent() {
+    return layered_costmap_->isCurrent();
+  }
 
   /**
    * @brief Get the pose of the robot in the global frame of the costmap
@@ -125,36 +120,32 @@ public:
   /** @brief Return a pointer to the "master" costmap which receives updates from all the layers.
    *
    * Same as calling getLayeredCostmap()->getCostmap(). */
-  Costmap2D* getCostmap()
-    {
-      return layered_costmap_->getCostmap();
-    }
+  Costmap2D* getCostmap() {
+    return layered_costmap_->getCostmap();
+  }
 
   /**
    * @brief  Returns the global frame of the costmap
    * @return The global frame of the costmap
    */
-  std::string getGlobalFrameID()
-    {
-      return global_frame_;
-    }
+  std::string getGlobalFrameID() {
+    return global_frame_;
+  }
 
   /**
    * @brief  Returns the local frame of the costmap
    * @return The local frame of the costmap
    */
-  std::string getBaseFrameID()
-    {
-      return robot_base_frame_;
-    }
-  LayeredCostmap* getLayeredCostmap()
-    {
-      return layered_costmap_;
-    }
+  std::string getBaseFrameID() {
+    return robot_base_frame_;
+  }
+
+  LayeredCostmap* getLayeredCostmap() {
+    return layered_costmap_;
+  }
 
   /** @brief Returns the current padded footprint as a geometry_msgs::Polygon. */
-  geometry_msgs::Polygon getRobotFootprintPolygon()
-  {
+  geometry_msgs::Polygon getRobotFootprintPolygon() {
     return costmap_2d::toPolygon(padded_footprint_);
   }
 
@@ -166,8 +157,7 @@ public:
    * The footprint initially comes from the rosparam "footprint" but
    * can be overwritten by dynamic reconfigure or by messages received
    * on the "footprint" topic. */
-  std::vector<geometry_msgs::Point> getRobotFootprint()
-  {
+  std::vector<geometry_msgs::Point> getRobotFootprint() {
     return padded_footprint_;
   }
 
@@ -178,8 +168,7 @@ public:
    * The footprint initially comes from the rosparam "footprint" but
    * can be overwritten by dynamic reconfigure or by messages received
    * on the "footprint" topic. */
-  std::vector<geometry_msgs::Point> getUnpaddedRobotFootprint()
-  {
+  std::vector<geometry_msgs::Point> getUnpaddedRobotFootprint() {
     return unpadded_footprint_;
   }
 
@@ -224,7 +213,7 @@ public:
    */
   double getRobotRadius() const;
 
-protected:
+ protected:
   LayeredCostmap* layered_costmap_;
   std::string name_;
   tf::TransformListener& tf_;  ///< @brief Used for transforming point clouds
@@ -232,7 +221,7 @@ protected:
   std::string robot_base_frame_;  ///< @brief The frame_id of the robot base
   double transform_tolerance_;  ///< timeout before transform errors
 
-private:
+ private:
   /** @brief Set the footprint from the new_config object.
    *
    * If the values of footprint and robot_radius are the same in

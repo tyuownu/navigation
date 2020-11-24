@@ -51,8 +51,7 @@
  */
 enum MapMode {TRINARY, SCALE, RAW};
 
-namespace map_server
-{
+namespace map_server {
 
 /** Read the image from file and fill out the resp object, for later
  * use when our services are requested.

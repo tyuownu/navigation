@@ -38,8 +38,7 @@
 
 ////////////////////////////////////////////////////////////////////////////
 // Draw the occupancy map
-void map_draw_occ(map_t *map, rtk_fig_t *fig)
-{
+void map_draw_occ(map_t *map, rtk_fig_t *fig) {
   int i, j;
   int col;
   map_cell_t *cell;
@@ -49,10 +48,8 @@ void map_draw_occ(map_t *map, rtk_fig_t *fig)
   image = malloc(map->size_x * map->size_y * sizeof(image[0]));
 
   // Draw occupancy
-  for (j = 0; j < map->size_y; j++)
-  {
-    for (i =  0; i < map->size_x; i++)
-    {
+  for (j = 0; j < map->size_y; j++) {
+    for (i =  0; i < map->size_x; i++) {
       cell = map->cells + MAP_INDEX(map, i, j);
       pixel = image + (j * map->size_x + i);
 
@@ -73,8 +70,7 @@ void map_draw_occ(map_t *map, rtk_fig_t *fig)
 
 ////////////////////////////////////////////////////////////////////////////
 // Draw the cspace map
-void map_draw_cspace(map_t *map, rtk_fig_t *fig)
-{
+void map_draw_cspace(map_t *map, rtk_fig_t *fig) {
   int i, j;
   int col;
   map_cell_t *cell;
@@ -84,10 +80,8 @@ void map_draw_cspace(map_t *map, rtk_fig_t *fig)
   image = malloc(map->size_x * map->size_y * sizeof(image[0]));
 
   // Draw occupancy
-  for (j = 0; j < map->size_y; j++)
-  {
-    for (i =  0; i < map->size_x; i++)
-    {
+  for (j = 0; j < map->size_y; j++) {
+    for (i =  0; i < map->size_x; i++) {
       cell = map->cells + MAP_INDEX(map, i, j);
       pixel = image + (j * map->size_x + i);
 
@@ -109,8 +103,7 @@ void map_draw_cspace(map_t *map, rtk_fig_t *fig)
 
 ////////////////////////////////////////////////////////////////////////////
 // Draw a wifi map
-void map_draw_wifi(map_t *map, rtk_fig_t *fig, int index)
-{
+void map_draw_wifi(map_t *map, rtk_fig_t *fig, int index) {
   int i, j;
   int level, col;
   map_cell_t *cell;
@@ -121,24 +114,19 @@ void map_draw_wifi(map_t *map, rtk_fig_t *fig, int index)
   mask = malloc(map->size_x * map->size_y * sizeof(mask[0]));
 
   // Draw wifi levels
-  for (j = 0; j < map->size_y; j++)
-  {
-    for (i =  0; i < map->size_x; i++)
-    {
+  for (j = 0; j < map->size_y; j++) {
+    for (i =  0; i < map->size_x; i++) {
       cell = map->cells + MAP_INDEX(map, i, j);
       ipix = image + (j * map->size_x + i);
       mpix = mask + (j * map->size_x + i);
 
       level = cell->wifi_levels[index];
 
-      if (cell->occ_state == -1 && level != 0)
-      {
+      if (cell->occ_state == -1 && level != 0) {
         col = 255 * (100 + level) / 100;
         *ipix = RTK_RGB16(col, col, col);
         *mpix = 1;
-      }
-      else
-      {
+      } else {
         *mpix = 0;
       }
     }

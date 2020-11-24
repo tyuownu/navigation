@@ -53,7 +53,8 @@ void SimpleTrajectoryGenerator::initialise(
     bool discretize_by_time) {
   initialise(pos, vel, goal, limits, vsamples, discretize_by_time);
   // add static samples if any
-  sample_params_.insert(sample_params_.end(), additional_samples.begin(), additional_samples.end());
+  sample_params_.insert(sample_params_.end(),
+      additional_samples.begin(), additional_samples.end());
 }
 
 
@@ -122,11 +123,11 @@ void SimpleTrajectoryGenerator::initialise(
     VelocityIterator x_it(min_vel[0], max_vel[0], vsamples[0]);
     VelocityIterator y_it(min_vel[1], max_vel[1], vsamples[1]);
     VelocityIterator th_it(min_vel[2], max_vel[2], vsamples[2]);
-    for(; !x_it.isFinished(); x_it++) {
+    for (; !x_it.isFinished(); x_it++) {
       vel_samp[0] = x_it.getVelocity();
-      for(; !y_it.isFinished(); y_it++) {
+      for (; !y_it.isFinished(); y_it++) {
         vel_samp[1] = y_it.getVelocity();
-        for(; !th_it.isFinished(); th_it++) {
+        for (; !th_it.isFinished(); th_it++) {
           vel_samp[2] = th_it.getVelocity();
           //ROS_DEBUG("Sample %f, %f, %f", vel_samp[0], vel_samp[1], vel_samp[2]);
           sample_params_.push_back(vel_samp);
@@ -246,10 +247,9 @@ bool SimpleTrajectoryGenerator::generateTrajectory(
   }
 
   //simulate the trajectory and check for collisions, updating costs along the way
-  
+
   for (int i = 0; i < num_steps; ++i) {
       //ROS_INFO_STREAM("pos: " << pos[0] << ", " << pos[1] << ", " << pos[2]);
-  
 
     //add the point to the trajectory so we can draw it later if we want
     traj.addPoint(pos[0], pos[1], pos[2]);

@@ -32,11 +32,9 @@
 #include "amcl_sensor.h"
 #include "../pf/pf_pdf.h"
 
-namespace amcl
-{
+namespace amcl {
 
-typedef enum
-{
+typedef enum {
   ODOM_MODEL_DIFF,
   ODOM_MODEL_OMNI,
   ODOM_MODEL_DIFF_CORRECTED,
@@ -44,8 +42,7 @@ typedef enum
 } odom_model_t;
 
 // Odometric sensor data
-class AMCLOdomData : public AMCLSensorData
-{
+class AMCLOdomData : public AMCLSensorData {
   // Odometric pose
   public: pf_vector_t pose;
 
@@ -55,19 +52,18 @@ class AMCLOdomData : public AMCLSensorData
 
 
 // Odometric sensor model
-class AMCLOdom : public AMCLSensor
-{
+class AMCLOdom : public AMCLSensor {
   // Default constructor
   public: AMCLOdom();
 
-  public: void SetModelDiff(double alpha1, 
-                            double alpha2, 
-                            double alpha3, 
+  public: void SetModelDiff(double alpha1,
+                            double alpha2,
+                            double alpha3,
                             double alpha4);
 
-  public: void SetModelOmni(double alpha1, 
-                            double alpha2, 
-                            double alpha3, 
+  public: void SetModelOmni(double alpha1,
+                            double alpha2,
+                            double alpha3,
                             double alpha4,
                             double alpha5);
 
@@ -84,7 +80,7 @@ class AMCLOdom : public AMCLSensor
 
   // Current data timestamp
   private: double time;
-  
+
   // Model type
   private: odom_model_t model_type;
 

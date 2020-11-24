@@ -34,8 +34,7 @@
 #include <vector>
 #include <string>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
 /** @brief Parse a vector of vectors of floats from a string.
  * @param error_return If no error, error_return is set to "".  If

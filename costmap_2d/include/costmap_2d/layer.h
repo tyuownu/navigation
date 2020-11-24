@@ -43,13 +43,11 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 class LayeredCostmap;
 
-class Layer
-{
-public:
+class Layer {
+ public:
   Layer();
 
   void initialize(LayeredCostmap* parent, std::string name, tf::TransformListener *tf);
@@ -62,14 +60,15 @@ public:
    * For more details, see "Layered Costmaps for Context-Sensitive Navigation",
    * by Lu et. Al, IROS 2014.
    */
-  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
-                            double* max_x, double* max_y) {}
+  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw,
+      double* min_x, double* min_y, double* max_x, double* max_y) {}
 
   /**
    * @brief Actually update the underlying costmap, only within the bounds
    *        calculated during UpdateBounds().
    */
-  virtual void updateCosts(Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j) {}
+  virtual void updateCosts(Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j) {}
 
   /** @brief Stop publishers. */
   virtual void deactivate() {}
@@ -91,16 +90,14 @@ public:
    *        variable current_.
    * @return Whether the data in the layer is up to date.
    */
-  bool isCurrent() const
-  {
+  bool isCurrent() const {
     return current_;
   }
 
   /** @brief Implement this to make this layer match the size of the parent costmap. */
   virtual void matchSize() {}
 
-  std::string getName() const
-  {
+  std::string getName() const {
     return name_;
   }
 
@@ -112,7 +109,7 @@ public:
    * notified of changes to the robot's footprint. */
   virtual void onFootprintChanged() {}
 
-protected:
+ protected:
   /** @brief This is called at the end of initialize().  Override to
    * implement subclass-specific initialization.
    *
@@ -125,7 +122,7 @@ protected:
   std::string name_;
   tf::TransformListener* tf_;
 
-private:
+ private:
   std::vector<geometry_msgs::Point> footprint_spec_;
 };
 

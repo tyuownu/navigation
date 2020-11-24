@@ -38,11 +38,9 @@
 
 #include <Eigen/Core>
 
-namespace base_local_planner
-{
-class LocalPlannerLimits
-{
-public:
+namespace base_local_planner {
+class LocalPlannerLimits {
+ public:
 
   double max_trans_vel;
   double min_trans_vel;
@@ -56,8 +54,8 @@ public:
   double acc_lim_y;
   double acc_lim_theta;
   double acc_limit_trans;
-//  double jerk_lim_trans;
-//  double jerk_lim_rot;
+  //  double jerk_lim_trans;
+  //  double jerk_lim_rot;
   bool   prune_plan;
   double xy_goal_tolerance;
   double yaw_goal_tolerance;
@@ -82,11 +80,11 @@ public:
       double nacc_limit_trans,
       double nxy_goal_tolerance,
       double nyaw_goal_tolerance,
-//      double njerk_lim_trans = -1,
-//      double njerk_lim_rot = -1,
+      //      double njerk_lim_trans = -1,
+      //      double njerk_lim_rot = -1,
       bool   nprune_plan = true,
       double ntrans_stopped_vel = 0.1,
-      double nrot_stopped_vel = 0.1):
+      double nrot_stopped_vel = 0.1) :
         max_trans_vel(nmax_trans_vel),
         min_trans_vel(nmin_trans_vel),
         max_vel_x(nmax_vel_x),
@@ -99,8 +97,8 @@ public:
         acc_lim_y(nacc_lim_y),
         acc_lim_theta(nacc_lim_theta),
         acc_limit_trans(nacc_limit_trans),
-//        jerk_lim_trans(njerk_lim_trans),
-//        jerk_lim_rot(njerk_lim_rot),
+        //        jerk_lim_trans(njerk_lim_trans),
+        //        jerk_lim_rot(njerk_lim_rot),
         prune_plan(nprune_plan),
         xy_goal_tolerance(nxy_goal_tolerance),
         yaw_goal_tolerance(nyaw_goal_tolerance),

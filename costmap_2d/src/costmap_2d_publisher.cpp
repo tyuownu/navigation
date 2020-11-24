@@ -39,22 +39,21 @@
 #include <costmap_2d/costmap_2d_publisher.h>
 #include <costmap_2d/cost_values.h>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
 char* Costmap2DPublisher::cost_translation_table_ = NULL;
 
-Costmap2DPublisher::Costmap2DPublisher(ros::NodeHandle * ros_node, Costmap2D* costmap, std::string global_frame,
-                                       std::string topic_name, bool always_send_full_costmap) :
+Costmap2DPublisher::Costmap2DPublisher(ros::NodeHandle * ros_node,
+    Costmap2D* costmap, std::string global_frame,
+    std::string topic_name, bool always_send_full_costmap) :
     node(ros_node), costmap_(costmap), global_frame_(global_frame), active_(false),
-    always_send_full_costmap_(always_send_full_costmap)
-{
-  costmap_pub_ = ros_node->advertise<nav_msgs::OccupancyGrid>(topic_name, 1,
-                                                    boost::bind(&Costmap2DPublisher::onNewSubscription, this, _1));
-  costmap_update_pub_ = ros_node->advertise<map_msgs::OccupancyGridUpdate>(topic_name + "_updates", 1);
+    always_send_full_costmap_(always_send_full_costmap) {
+  costmap_pub_ = ros_node->advertise<nav_msgs::OccupancyGrid>(
+      topic_name, 1, boost::bind(&Costmap2DPublisher::onNewSubscription, this, _1));
+  costmap_update_pub_ = ros_node->advertise<map_msgs::OccupancyGridUpdate>(
+      topic_name + "_updates", 1);
 
-  if (cost_translation_table_ == NULL)
-  {
+  if (cost_translation_table_ == NULL) {
     cost_translation_table_ = new char[256];
 
     // special values:
@@ -65,8 +64,7 @@ Costmap2DPublisher::Costmap2DPublisher(ros::NodeHandle * ros_node, Costmap2D* co
 
     // regular cost values scale the range 1 to 252 (inclusive) to fit
     // into 1 to 98 (inclusive).
-    for (int i = 1; i < 253; i++)
-    {
+    for (int i = 1; i < 253; i++) {
       cost_translation_table_[ i ] = char(1 + (97 * (i - 1)) / 251);
     }
   }
@@ -80,15 +78,13 @@ Costmap2DPublisher::~Costmap2DPublisher()
 {
 }
 
-void Costmap2DPublisher::onNewSubscription(const ros::SingleSubscriberPublisher& pub)
-{
+void Costmap2DPublisher::onNewSubscription(const ros::SingleSubscriberPublisher& pub) {
   prepareGrid();
   pub.publish(grid_);
 }
 
 // prepare grid_ message for publication.
-void Costmap2DPublisher::prepareGrid()
-{
+void Costmap2DPublisher::prepareGrid() {
   boost::unique_lock<Costmap2D::mutex_t> lock(*(costmap_->getMutex()));
   double resolution = costmap_->getResolution();
 
@@ -111,16 +107,13 @@ void Costmap2DPublisher::prepareGrid()
   grid_.data.resize(grid_.info.width * grid_.info.height);
 
   unsigned char* data = costmap_->getCharMap();
-  for (unsigned int i = 0; i < grid_.data.size(); i++)
-  {
+  for (unsigned int i = 0; i < grid_.data.size(); i++) {
     grid_.data[i] = cost_translation_table_[ data[ i ]];
   }
 }
 
-void Costmap2DPublisher::publishCostmap()
-{
-  if (costmap_pub_.getNumSubscribers() == 0)
-  {
+void Costmap2DPublisher::publishCostmap() {
+  if (costmap_pub_.getNumSubscribers() == 0) {
     // No subscribers, so why do any work?
     return;
   }
@@ -131,13 +124,10 @@ void Costmap2DPublisher::publishCostmap()
       grid_.info.width != costmap_->getSizeInCellsX() ||
       grid_.info.height != costmap_->getSizeInCellsY() ||
       saved_origin_x_ != costmap_->getOriginX() ||
-      saved_origin_y_ != costmap_->getOriginY())
-  {
+      saved_origin_y_ != costmap_->getOriginY()) {
     prepareGrid();
     costmap_pub_.publish(grid_);
-  }
-  else if (x0_ < xn_)
-  {
+  } else if (x0_ < xn_) {
     boost::unique_lock<Costmap2D::mutex_t> lock(*(costmap_->getMutex()));
     // Publish Just an Update
     map_msgs::OccupancyGridUpdate update;
@@ -150,10 +140,8 @@ void Costmap2DPublisher::publishCostmap()
     update.data.resize(update.width * update.height);
 
     unsigned int i = 0;
-    for (unsigned int y = y0_; y < yn_; y++)
-    {
-      for (unsigned int x = x0_; x < xn_; x++)
-      {
+    for (unsigned int y = y0_; y < yn_; y++) {
+      for (unsigned int x = x0_; x < xn_; x++) {
         unsigned char cost = costmap_->getCost(x, y);
         update.data[i++] = cost_translation_table_[ cost ];
       }

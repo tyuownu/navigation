@@ -44,47 +44,41 @@
 
 using std::vector;
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
-LayeredCostmap::LayeredCostmap(std::string global_frame, bool rolling_window, bool track_unknown) :
-    costmap_(), global_frame_(global_frame), rolling_window_(rolling_window), initialized_(false), size_locked_(false)
-{
+LayeredCostmap::LayeredCostmap(std::string global_frame,
+    bool rolling_window, bool track_unknown) :
+    costmap_(), global_frame_(global_frame), rolling_window_(rolling_window),
+    initialized_(false), size_locked_(false) {
   if (track_unknown)
     costmap_.setDefaultValue(255);
   else
     costmap_.setDefaultValue(0);
 }
 
-LayeredCostmap::~LayeredCostmap()
-{
-  while (plugins_.size() > 0)
-  {
+LayeredCostmap::~LayeredCostmap() {
+  while (plugins_.size() > 0) {
     plugins_.pop_back();
   }
 }
 
-void LayeredCostmap::resizeMap(unsigned int size_x, unsigned int size_y, double resolution, double origin_x,
-                               double origin_y, bool size_locked)
-{
+void LayeredCostmap::resizeMap(unsigned int size_x, unsigned int size_y, double resolution,
+    double origin_x, double origin_y, bool size_locked) {
   size_locked_ = size_locked;
   costmap_.resizeMap(size_x, size_y, resolution, origin_x, origin_y);
-  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-      ++plugin)
-  {
+  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin();
+      plugin != plugins_.end(); ++plugin) {
     (*plugin)->matchSize();
   }
 }
 
-void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
-{
+void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw) {
   // Lock for the remainder of this function, some plugins (e.g. VoxelLayer)
   // implement thread unsafe updateBounds() functions.
   boost::unique_lock<Costmap2D::mutex_t> lock(*(costmap_.getMutex()));
 
   // if we're using a rolling buffer costmap... we need to update the origin using the robot's position
-  if (rolling_window_)
-  {
+  if (rolling_window_) {
     double new_origin_x = robot_x - costmap_.getSizeInMetersX() / 2;
     double new_origin_y = robot_y - costmap_.getSizeInMetersY() / 2;
     costmap_.updateOrigin(new_origin_x, new_origin_y);
@@ -96,16 +90,14 @@ void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
   minx_ = miny_ = 1e30;
   maxx_ = maxy_ = -1e30;
 
-  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-       ++plugin)
-  {
+  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin();
+      plugin != plugins_.end(); ++plugin) {
     double prev_minx = minx_;
     double prev_miny = miny_;
     double prev_maxx = maxx_;
     double prev_maxy = maxy_;
     (*plugin)->updateBounds(robot_x, robot_y, robot_yaw, &minx_, &miny_, &maxx_, &maxy_);
-    if (minx_ > prev_minx || miny_ > prev_miny || maxx_ < prev_maxx || maxy_ < prev_maxy)
-    {
+    if (minx_ > prev_minx || miny_ > prev_miny || maxx_ < prev_maxx || maxy_ < prev_maxy) {
       ROS_WARN_THROTTLE(1.0, "Illegal bounds change, was [tl: (%f, %f), br: (%f, %f)], but "
                         "is now [tl: (%f, %f), br: (%f, %f)]. The offending layer is %s",
                         prev_minx, prev_miny, prev_maxx , prev_maxy,
@@ -129,9 +121,8 @@ void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
     return;
 
   costmap_.resetMap(x0, y0, xn, yn);
-  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-       ++plugin)
-  {
+  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin();
+      plugin != plugins_.end(); ++plugin) {
     (*plugin)->updateCosts(costmap_, x0, y0, xn, yn);
   }
 
@@ -143,25 +134,21 @@ void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
   initialized_ = true;
 }
 
-bool LayeredCostmap::isCurrent()
-{
+bool LayeredCostmap::isCurrent() {
   current_ = true;
-  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-      ++plugin)
-  {
+  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin();
+      plugin != plugins_.end(); ++plugin) {
     current_ = current_ && (*plugin)->isCurrent();
   }
   return current_;
 }
 
-void LayeredCostmap::setFootprint(const std::vector<geometry_msgs::Point>& footprint_spec)
-{
+void LayeredCostmap::setFootprint(const std::vector<geometry_msgs::Point>& footprint_spec) {
   footprint_ = footprint_spec;
   costmap_2d::calculateMinAndMaxDistances(footprint_spec, inscribed_radius_, circumscribed_radius_);
 
-  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
-      ++plugin)
-  {
+  for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin();
+      plugin != plugins_.end(); ++plugin) {
     (*plugin)->onFootprintChanged();
   }
 }

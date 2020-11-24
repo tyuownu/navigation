@@ -59,7 +59,7 @@ namespace base_local_planner {
  * trajectory rollout approach does so respecting the acceleration limit, so it gradually increases velocity
  */
 class SimpleTrajectoryGenerator: public base_local_planner::TrajectorySampleGenerator {
-public:
+ public:
 
   SimpleTrajectoryGenerator() {
     limits_ = NULL;
@@ -138,7 +138,7 @@ public:
         Eigen::Vector3f sample_target_vel,
         base_local_planner::Trajectory& traj);
 
-protected:
+ protected:
 
   unsigned int next_sample_index_;
   // to store sample params of each sample between init and generation

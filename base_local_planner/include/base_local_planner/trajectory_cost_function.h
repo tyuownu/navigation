@@ -50,7 +50,7 @@ namespace base_local_planner {
  * trajectory of the sampling set, score_trajectory may be called.
  */
 class TrajectoryCostFunction {
-public:
+ public:
 
   /**
    *
@@ -74,10 +74,10 @@ public:
 
   virtual ~TrajectoryCostFunction() {}
 
-protected:
+ protected:
   TrajectoryCostFunction(double scale = 1.0): scale_(scale) {}
 
-private:
+ private:
   double scale_;
 };
 

@@ -116,8 +116,10 @@ bool LatchedStopRotateController::stopWithAccLimits(const tf::Stamped<tf::Pose>&
 
   //slow down with the maximum possible acceleration... we should really use the frequency that we're running at to determine what is feasible
   //but we'll use a tenth of a second to be consistent with the implementation of the local planner.
-  double vx = sign(robot_vel.getOrigin().x()) * std::max(0.0, (fabs(robot_vel.getOrigin().x()) - acc_lim[0] * sim_period));
-  double vy = sign(robot_vel.getOrigin().y()) * std::max(0.0, (fabs(robot_vel.getOrigin().y()) - acc_lim[1] * sim_period));
+  double vx = sign(robot_vel.getOrigin().x()) * std::max(0.0,
+      (fabs(robot_vel.getOrigin().x()) - acc_lim[0] * sim_period));
+  double vy = sign(robot_vel.getOrigin().y()) * std::max(0.0,
+      (fabs(robot_vel.getOrigin().y()) - acc_lim[1] * sim_period));
 
   double vel_yaw = tf::getYaw(robot_vel.getRotation());
   double vth = sign(vel_yaw) * std::max(0.0, (fabs(vel_yaw) - acc_lim[2] * sim_period));
@@ -129,8 +131,9 @@ bool LatchedStopRotateController::stopWithAccLimits(const tf::Stamped<tf::Pose>&
                                   Eigen::Vector3f(vx, vy, vth));
 
   //if we have a valid command, we'll pass it on, otherwise we'll command all zeros
-  if(valid_cmd){
-    ROS_DEBUG_NAMED("latched_stop_rotate", "Slowing down... using vx, vy, vth: %.2f, %.2f, %.2f", vx, vy, vth);
+  if (valid_cmd) {
+    ROS_DEBUG_NAMED("latched_stop_rotate", "Slowing down... using vx, vy, vth: %.2f, %.2f, %.2f",
+        vx, vy, vth);
     cmd_vel.linear.x = vx;
     cmd_vel.linear.y = vy;
     cmd_vel.angular.z = vth;
@@ -194,7 +197,8 @@ bool LatchedStopRotateController::rotateToGoal(
 
 }
 
-bool LatchedStopRotateController::computeVelocityCommandsStopRotate(geometry_msgs::Twist& cmd_vel,
+bool LatchedStopRotateController::computeVelocityCommandsStopRotate(
+    geometry_msgs::Twist& cmd_vel,
     Eigen::Vector3f acc_lim,
     double sim_period,
     LocalPlannerUtil* planner_util,
@@ -235,14 +239,10 @@ bool LatchedStopRotateController::computeVelocityCommandsStopRotate(geometry_msg
     odom_helper_.getOdom(base_odom);
 
     //if we're not stopped yet... we want to stop... taking into account the acceleration limits of the robot
-    if ( ! rotating_to_goal_ && !base_local_planner::stopped(base_odom, limits.rot_stopped_vel, limits.trans_stopped_vel)) {
-      if ( ! stopWithAccLimits(
-          global_pose,
-          robot_vel,
-          cmd_vel,
-          acc_lim,
-          sim_period,
-          obstacle_check)) {
+    if ( ! rotating_to_goal_ && !base_local_planner::stopped(base_odom,
+          limits.rot_stopped_vel, limits.trans_stopped_vel)) {
+      if ( ! stopWithAccLimits( global_pose, robot_vel, cmd_vel, acc_lim,
+            sim_period, obstacle_check)) {
         ROS_INFO("Error when stopping.");
         return false;
       }
@@ -252,15 +252,8 @@ bool LatchedStopRotateController::computeVelocityCommandsStopRotate(geometry_msg
     else {
       //set this so that we know its OK to be moving
       rotating_to_goal_ = true;
-      if ( ! rotateToGoal(
-          global_pose,
-          robot_vel,
-          goal_th,
-          cmd_vel,
-          acc_lim,
-          sim_period,
-          limits,
-          obstacle_check)) {
+      if ( ! rotateToGoal( global_pose, robot_vel, goal_th, cmd_vel, acc_lim,
+          sim_period, limits, obstacle_check)) {
         ROS_INFO("Error when rotating.");
         return false;
       }

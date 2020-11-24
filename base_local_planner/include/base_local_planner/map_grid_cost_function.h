@@ -72,7 +72,7 @@ enum CostAggregationType { Last, Sum, Product};
  * @param aggregationType how to combine costs along trajectory
  */
 class MapGridCostFunction: public base_local_planner::TrajectoryCostFunction {
-public:
+ public:
   MapGridCostFunction(costmap_2d::Costmap2D* costmap,
       double xshift = 0.0,
       double yshift = 0.0,
@@ -120,7 +120,7 @@ public:
   // used for easier debugging
   double getCellCosts(unsigned int cx, unsigned int cy);
 
-private:
+ private:
   std::vector<geometry_msgs::PoseStamped> target_poses_;
   costmap_2d::Costmap2D* costmap_;
 

@@ -35,8 +35,7 @@
 // Extract a single range reading from the map.  Unknown cells and/or
 // out-of-bound cells are treated as occupied, which makes it easy to
 // use Stage bitmap files.
-double map_calc_range(map_t *map, double ox, double oy, double oa, double max_range)
-{
+double map_calc_range(map_t *map, double ox, double oy, double oa, double max_range) {
   // Bresenham raytracing
   int x0,x1,y0,y1;
   int x,y;
@@ -47,17 +46,16 @@ double map_calc_range(map_t *map, double ox, double oy, double oa, double max_ra
 
   x0 = MAP_GXWX(map,ox);
   y0 = MAP_GYWY(map,oy);
-  
+
   x1 = MAP_GXWX(map,ox + max_range * cos(oa));
   y1 = MAP_GYWY(map,oy + max_range * sin(oa));
 
-  if(abs(y1-y0) > abs(x1-x0))
+  if (abs(y1-y0) > abs(x1-x0))
     steep = 1;
   else
     steep = 0;
 
-  if(steep)
-  {
+  if (steep) {
     tmp = x0;
     x0 = y0;
     y0 = tmp;
@@ -75,44 +73,37 @@ double map_calc_range(map_t *map, double ox, double oy, double oa, double max_ra
   x = x0;
   y = y0;
 
-  if(x0 < x1)
+  if (x0 < x1)
     xstep = 1;
   else
     xstep = -1;
-  if(y0 < y1)
+
+  if (y0 < y1)
     ystep = 1;
   else
     ystep = -1;
 
-  if(steep)
-  {
-    if(!MAP_VALID(map,y,x) || map->cells[MAP_INDEX(map,y,x)].occ_state > -1)
+  if (steep) {
+    if (!MAP_VALID(map,y,x) || map->cells[MAP_INDEX(map,y,x)].occ_state > -1)
       return sqrt((x-x0)*(x-x0) + (y-y0)*(y-y0)) * map->scale;
-  }
-  else
-  {
-    if(!MAP_VALID(map,x,y) || map->cells[MAP_INDEX(map,x,y)].occ_state > -1)
+  } else {
+    if (!MAP_VALID(map,x,y) || map->cells[MAP_INDEX(map,x,y)].occ_state > -1)
       return sqrt((x-x0)*(x-x0) + (y-y0)*(y-y0)) * map->scale;
   }
 
-  while(x != (x1 + xstep * 1))
-  {
+  while (x != (x1 + xstep * 1)) {
     x += xstep;
     error += deltaerr;
-    if(2*error >= deltax)
-    {
+    if (2*error >= deltax) {
       y += ystep;
       error -= deltax;
     }
 
-    if(steep)
-    {
-      if(!MAP_VALID(map,y,x) || map->cells[MAP_INDEX(map,y,x)].occ_state > -1)
+    if (steep) {
+      if (!MAP_VALID(map,y,x) || map->cells[MAP_INDEX(map,y,x)].occ_state > -1)
         return sqrt((x-x0)*(x-x0) + (y-y0)*(y-y0)) * map->scale;
-    }
-    else
-    {
-      if(!MAP_VALID(map,x,y) || map->cells[MAP_INDEX(map,x,y)].occ_state > -1)
+    } else {
+      if (!MAP_VALID(map,x,y) || map->cells[MAP_INDEX(map,x,y)].occ_state > -1)
         return sqrt((x-x0)*(x-x0) + (y-y0)*(y-y0)) * map->scale;
     }
   }

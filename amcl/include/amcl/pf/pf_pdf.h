@@ -42,8 +42,7 @@ extern "C" {
  *************************************************************************/
 
 // Gaussian PDF info
-typedef struct
-{
+typedef struct {
   // Mean, covariance and inverse covariance
   pf_vector_t x;
   pf_matrix_t cx;
@@ -56,7 +55,6 @@ typedef struct
 
   // A random number generator
   //gsl_rng *rng;
-
 } pf_pdf_gaussian_t;
 
 

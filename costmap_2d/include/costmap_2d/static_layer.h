@@ -47,12 +47,10 @@
 #include <map_msgs/OccupancyGridUpdate.h>
 #include <message_filters/subscriber.h>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
-class StaticLayer : public CostmapLayer
-{
-public:
+class StaticLayer : public CostmapLayer {
+ public:
   StaticLayer();
   virtual ~StaticLayer();
   virtual void onInitialize();
@@ -60,13 +58,14 @@ public:
   virtual void deactivate();
   virtual void reset();
 
-  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
-                            double* max_x, double* max_y);
-  virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
+  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw,
+      double* min_x, double* min_y, double* max_x, double* max_y);
+  virtual void updateCosts(costmap_2d::Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j);
 
   virtual void matchSize();
 
-private:
+ private:
   /**
    * @brief  Callback to update the costmap's map from the map_server
    * @param new_map The map to put into the costmap. The origin of the new

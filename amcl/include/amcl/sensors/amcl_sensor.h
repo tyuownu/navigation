@@ -30,19 +30,17 @@
 
 #include "../pf/pf.h"
 
-namespace amcl
-{
+namespace amcl {
 
 // Forward declarations
 class AMCLSensorData;
 
 
 // Base class for all AMCL sensors
-class AMCLSensor
-{
+class AMCLSensor {
   // Default constructor
   public: AMCLSensor();
-         
+
   // Default destructor
   public: virtual ~AMCLSensor();
 
@@ -82,11 +80,10 @@ class AMCLSensor
 
 
 // Base class for all AMCL sensor measurements
-class AMCLSensorData
-{
+class AMCLSensorData {
   // Pointer to sensor that generated the data
   public: AMCLSensor *sensor;
-          virtual ~AMCLSensorData() {}
+  virtual ~AMCLSensorData() {}
 
   // Data timestamp
   public: double time;

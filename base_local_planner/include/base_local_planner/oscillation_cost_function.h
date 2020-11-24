@@ -43,8 +43,8 @@
 
 namespace base_local_planner {
 
-class OscillationCostFunction: public base_local_planner::TrajectoryCostFunction {
-public:
+class OscillationCostFunction : public base_local_planner::TrajectoryCostFunction {
+ public:
   OscillationCostFunction();
   virtual ~OscillationCostFunction();
 
@@ -58,13 +58,15 @@ public:
   void resetOscillationFlags();
 
 
-  void updateOscillationFlags(Eigen::Vector3f pos, base_local_planner::Trajectory* traj, double min_vel_trans);
+  void updateOscillationFlags(Eigen::Vector3f pos,
+      base_local_planner::Trajectory* traj, double min_vel_trans);
 
   void setOscillationResetDist(double dist, double angle);
 
-private:
+ private:
 
-  void resetOscillationFlagsIfPossible(const Eigen::Vector3f& pos, const Eigen::Vector3f& prev);
+  void resetOscillationFlagsIfPossible(const Eigen::Vector3f& pos,
+      const Eigen::Vector3f& prev);
 
   /**
    * @brief  Given a trajectory that's selected, set flags if needed to

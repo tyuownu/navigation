@@ -48,7 +48,7 @@
 namespace base_local_planner {
 
 class FootprintHelper {
-public:
+ public:
   FootprintHelper();
   virtual ~FootprintHelper();
 
@@ -74,7 +74,8 @@ public:
    * @param  y1 The y coordinate of the second point
    * @param  pts Will be filled with the cells that lie on the line in the grid
    */
-  void getLineCells(int x0, int x1, int y0, int y1, std::vector<base_local_planner::Position2DInt>& pts);
+  void getLineCells(int x0, int x1, int y0, int y1,
+      std::vector<base_local_planner::Position2DInt>& pts);
 
   /**
    * @brief Fill the outline of a polygon, in this case the robot footprint, in a grid

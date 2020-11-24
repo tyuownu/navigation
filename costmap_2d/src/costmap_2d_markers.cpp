@@ -41,8 +41,7 @@
 #include <costmap_2d/VoxelGrid.h>
 #include <voxel_grid/voxel_grid.h>
 
-struct Cell
-{
+struct Cell {
   double x;
   double y;
   double z;
@@ -57,10 +56,9 @@ float g_colors_a[] = {0.0f, 0.5f, 1.0f};
 
 std::string g_marker_ns;
 V_Cell g_cells;
-void voxelCallback(const ros::Publisher& pub, const costmap_2d::VoxelGridConstPtr& grid)
-{
-  if (grid->data.empty())
-  {
+void voxelCallback(const ros::Publisher& pub,
+    const costmap_2d::VoxelGridConstPtr& grid) {
+  if (grid->data.empty()) {
     ROS_ERROR("Received empty voxel grid");
     return;
   }
@@ -83,17 +81,14 @@ void voxelCallback(const ros::Publisher& pub, const costmap_2d::VoxelGridConstPt
 
   g_cells.clear();
   uint32_t num_markers = 0;
-  for (uint32_t y_grid = 0; y_grid < y_size; ++y_grid)
-  {
-    for (uint32_t x_grid = 0; x_grid < x_size; ++x_grid)
-    {
-      for (uint32_t z_grid = 0; z_grid < z_size; ++z_grid)
-      {
-        voxel_grid::VoxelStatus status = voxel_grid::VoxelGrid::getVoxel(x_grid, y_grid, z_grid, x_size, y_size, z_size,
-                                                                         data);
+  for (uint32_t y_grid = 0; y_grid < y_size; ++y_grid) {
+    for (uint32_t x_grid = 0; x_grid < x_size; ++x_grid) {
+      for (uint32_t z_grid = 0; z_grid < z_size; ++z_grid) {
+        voxel_grid::VoxelStatus status =
+          voxel_grid::VoxelGrid::getVoxel(x_grid, y_grid, z_grid,
+              x_size, y_size, z_size, data);
 
-        if (status == voxel_grid::MARKED)
-        {
+        if (status == voxel_grid::MARKED) {
           Cell c;
           c.status = status;
           c.x = x_origin + (x_grid + 0.5) * x_res;
@@ -123,8 +118,7 @@ void voxelCallback(const ros::Publisher& pub, const costmap_2d::VoxelGridConstPt
   m.color.b = g_colors_b[voxel_grid::MARKED];
   m.color.a = g_colors_a[voxel_grid::MARKED];
   m.points.resize(num_markers);
-  for (uint32_t i = 0; i < num_markers; ++i)
-  {
+  for (uint32_t i = 0; i < num_markers; ++i) {
     Cell& c = g_cells[i];
     geometry_msgs::Point& p = m.points[i];
     p.x = c.x;
@@ -146,7 +140,8 @@ int main(int argc, char** argv)
   ROS_DEBUG("Startup");
 
   ros::Publisher pub = n.advertise < visualization_msgs::Marker > ("visualization_marker", 1);
-  ros::Subscriber sub = n.subscribe < costmap_2d::VoxelGrid > ("voxel_grid", 1, boost::bind(voxelCallback, pub, _1));
+  ros::Subscriber sub = n.subscribe < costmap_2d::VoxelGrid > ("voxel_grid", 1,
+      boost::bind(voxelCallback, pub, _1));
   g_marker_ns = n.resolveName("voxel_grid");
 
   ros::spin();

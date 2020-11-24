@@ -56,22 +56,20 @@
 #include <costmap_2d/ObstaclePluginConfig.h>
 #include <costmap_2d/footprint.h>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
-class ObstacleLayer : public CostmapLayer
-{
-public:
-  ObstacleLayer()
-  {
+class ObstacleLayer : public CostmapLayer {
+ public:
+  ObstacleLayer() {
     costmap_ = NULL;  // this is the unsigned char* member of parent class Costmap2D.
   }
 
   virtual ~ObstacleLayer();
   virtual void onInitialize();
-  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
-                            double* max_x, double* max_y);
-  virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
+  virtual void updateBounds(double robot_x, double robot_y, double robot_yaw,
+      double* min_x, double* min_y, double* max_x, double* max_y);
+  virtual void updateCosts(costmap_2d::Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j);
 
   virtual void activate();
   virtual void deactivate();
@@ -113,7 +111,7 @@ public:
   void addStaticObservation(costmap_2d::Observation& obs, bool marking, bool clearing);
   void clearStaticObservations(bool marking, bool clearing);
 
-protected:
+ protected:
   virtual void setupDynamicReconfigure(ros::NodeHandle& nh);
 
   /**
@@ -138,16 +136,18 @@ protected:
    * @param max_x
    * @param max_y
    */
-  virtual void raytraceFreespace(const costmap_2d::Observation& clearing_observation, double* min_x, double* min_y,
-                                 double* max_x, double* max_y);
+  virtual void raytraceFreespace(
+      const costmap_2d::Observation& clearing_observation,
+      double* min_x, double* min_y, double* max_x, double* max_y);
 
-  void updateRaytraceBounds(double ox, double oy, double wx, double wy, double range, double* min_x, double* min_y,
-                            double* max_x, double* max_y);
+  void updateRaytraceBounds(double ox, double oy, double wx, double wy,
+      double range, double* min_x, double* min_y,
+      double* max_x, double* max_y);
 
   std::vector<geometry_msgs::Point> transformed_footprint_;
   bool footprint_clearing_enabled_;
-  void updateFootprint(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y, 
-                       double* max_x, double* max_y);
+  void updateFootprint(double robot_x, double robot_y, double robot_yaw,
+      double* min_x, double* min_y, double* max_x, double* max_y);
 
   std::string global_frame_;  ///< @brief The global frame for the costmap
   double max_obstacle_height_;  ///< @brief Max Obstacle Height
@@ -168,7 +168,7 @@ protected:
 
   int combination_method_;
 
-private:
+ private:
   void reconfigureCB(costmap_2d::ObstaclePluginConfig &config, uint32_t level);
 };
 

@@ -66,7 +66,7 @@ bool MapGridCostFunction::prepare() {
   } else {
     map_.setTargetCells(*costmap_, target_poses_);
   }
-  
+
   // tyu-save map
   /* tyu-用来保存map来判断其值
   char fn[4096];
@@ -74,7 +74,7 @@ bool MapGridCostFunction::prepare() {
   sprintf(fn, "%d.txt", index++);
   std::ofstream outfile;
   outfile.open(fn);
-  
+
 
   for (int i = 0; i < map_.size_x_; ++i) {
       for (int j = 0; j < map_.size_y_; ++j) {
@@ -131,7 +131,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
       }
     }
 
-    switch( aggregationType_ ) {
+    switch ( aggregationType_ ) {
     case Last:
       cost = grid_dist;
       break;

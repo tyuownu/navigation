@@ -47,7 +47,7 @@ namespace base_local_planner {
  * @brief Interface for modules finding a trajectory to use for navigation commands next
  */
 class TrajectorySearch {
-public:
+ public:
   /**
    * searches the space of allowed trajectory and
    * returns one considered the optimal given the
@@ -60,7 +60,7 @@ public:
 
   virtual ~TrajectorySearch() {}
 
-protected:
+ protected:
   TrajectorySearch() {}
 
 };

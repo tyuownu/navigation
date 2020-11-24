@@ -56,7 +56,7 @@ namespace base_local_planner {
  * possible using search heuristics, parallel search, etc.
  */
 class SimpleScoredSamplingPlanner : public base_local_planner::TrajectorySearch {
-public:
+ public:
 
   ~SimpleScoredSamplingPlanner() {}
 
@@ -71,7 +71,8 @@ public:
    * passing max_samples = -1 (default): Each Sampling planner will continue to call
    * generator until generator runs out of samples (or forever if that never happens)
    */
-  SimpleScoredSamplingPlanner(std::vector<TrajectorySampleGenerator*> gen_list, std::vector<TrajectoryCostFunction*>& critics, int max_samples = -1);
+  SimpleScoredSamplingPlanner(std::vector<TrajectorySampleGenerator*> gen_list,
+      std::vector<TrajectoryCostFunction*>& critics, int max_samples = -1);
 
   /**
    * runs all scoring functions over the trajectory creating a weigthed sum
@@ -94,7 +95,7 @@ public:
   bool findBestTrajectory(Trajectory& traj, std::vector<Trajectory>* all_explored = 0);
 
 
-private:
+ private:
   std::vector<TrajectorySampleGenerator*> gen_list_;
   std::vector<TrajectoryCostFunction*> critics_;
 

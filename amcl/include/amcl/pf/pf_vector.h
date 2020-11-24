@@ -33,17 +33,15 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-  
+
 // The basic vector
-typedef struct
-{
+typedef struct {
   double v[3];
 } pf_vector_t;
 
 
 // The basic matrix
-typedef struct
-{
+typedef struct {
   double m[3][3];
 } pf_matrix_t;
 

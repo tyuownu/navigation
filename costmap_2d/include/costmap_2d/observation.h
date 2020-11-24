@@ -36,27 +36,25 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
 /**
  * @brief Stores an observation in terms of a point cloud and the origin of the source
  * @note Tried to make members and constructor arguments const but the compiler would not accept the default
  * assignment operator for vector insertion!
  */
-class Observation
-{
-public:
+class Observation {
+ public:
   /**
    * @brief  Creates an empty observation
    */
   Observation() :
-    cloud_(new pcl::PointCloud<pcl::PointXYZ>()), obstacle_range_(0.0), raytrace_range_(0.0)
+    cloud_(new pcl::PointCloud<pcl::PointXYZ>()),
+    obstacle_range_(0.0), raytrace_range_(0.0)
   {
   }
 
-  virtual ~Observation()
-  {
+  virtual ~Observation() {
     delete cloud_;
   }
 
@@ -90,7 +88,8 @@ public:
    * @param obstacle_range The range out to which an observation should be able to insert obstacles
    */
   Observation(pcl::PointCloud<pcl::PointXYZ> cloud, double obstacle_range) :
-      cloud_(new pcl::PointCloud<pcl::PointXYZ>(cloud)), obstacle_range_(obstacle_range), raytrace_range_(0.0)
+      cloud_(new pcl::PointCloud<pcl::PointXYZ>(cloud)),
+      obstacle_range_(obstacle_range), raytrace_range_(0.0)
   {
   }
 

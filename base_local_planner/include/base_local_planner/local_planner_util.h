@@ -57,7 +57,7 @@ namespace base_local_planner {
  */
 class LocalPlannerUtil {
 
-private:
+ private:
   // things we get from move_base
   std::string name_;
   std::string global_frame_;
@@ -75,7 +75,7 @@ private:
   LocalPlannerLimits limits_;
   bool initialized_;
 
-public:
+ public:
 
   /**
    * @brief  Callback to update the local planner's parameters
@@ -95,7 +95,8 @@ public:
 
   bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
 
-  bool getLocalPlan(tf::Stamped<tf::Pose>& global_pose, std::vector<geometry_msgs::PoseStamped>& transformed_plan);
+  bool getLocalPlan(tf::Stamped<tf::Pose>& global_pose,
+      std::vector<geometry_msgs::PoseStamped>& transformed_plan);
 
   costmap_2d::Costmap2D* getCostmap();
 

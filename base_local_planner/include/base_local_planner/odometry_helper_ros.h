@@ -46,7 +46,7 @@
 namespace base_local_planner {
 
 class OdometryHelperRos {
-public:
+ public:
 
   /** @brief Constructor.
    * @param odom_topic The topic on which to subscribe to Odometry
@@ -75,7 +75,7 @@ public:
   /** @brief Return the current odometry topic. */
   std::string getOdomTopic() const { return odom_topic_; }
 
-private:
+ private:
   //odom topic
   std::string odom_topic_;
 

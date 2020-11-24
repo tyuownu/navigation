@@ -45,24 +45,23 @@ void LocalPlannerUtil::initialize(
     tf::TransformListener* tf,
     costmap_2d::Costmap2D* costmap,
     std::string global_frame) {
-  if(!initialized_) {
+  if (!initialized_) {
     tf_ = tf;
     costmap_ = costmap;
     global_frame_ = global_frame;
     initialized_ = true;
-  }
-  else{
+  } else {
     ROS_WARN("Planner utils have already been initialized, doing nothing.");
   }
 }
 
-void LocalPlannerUtil::reconfigureCB(LocalPlannerLimits &config, bool restore_defaults)
-{
-  if(setup_ && restore_defaults) {
+void LocalPlannerUtil::reconfigureCB(LocalPlannerLimits &config,
+    bool restore_defaults) {
+  if (setup_ && restore_defaults) {
     config = default_limits_;
   }
 
-  if(!setup_) {
+  if (!setup_) {
     default_limits_ = config;
     setup_ = true;
   }
@@ -82,14 +81,12 @@ LocalPlannerLimits LocalPlannerUtil::getCurrentLimits() {
 
 bool LocalPlannerUtil::getGoal(tf::Stamped<tf::Pose>& goal_pose) {
   //we assume the global goal is the last point in the global plan
-  return base_local_planner::getGoalPose(*tf_,
-        global_plan_,
-        global_frame_,
-        goal_pose);
+  return base_local_planner::getGoalPose(
+      *tf_, global_plan_, global_frame_, goal_pose);
 }
 
 bool LocalPlannerUtil::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
-  if(!initialized_){
+  if (!initialized_) {
     ROS_ERROR("Planner utils have not been initialized, please call initialize() first");
     return false;
   }
@@ -103,15 +100,11 @@ bool LocalPlannerUtil::setPlan(const std::vector<geometry_msgs::PoseStamped>& or
 }
 
 // tyu-getLocalPlan: 从全局轨迹中找出在局部地图内的全局轨迹，作为DWA等算法的global trajectory
-bool LocalPlannerUtil::getLocalPlan(tf::Stamped<tf::Pose>& global_pose, std::vector<geometry_msgs::PoseStamped>& transformed_plan) {
+bool LocalPlannerUtil::getLocalPlan(tf::Stamped<tf::Pose>& global_pose,
+    std::vector<geometry_msgs::PoseStamped>& transformed_plan) {
   //get the global plan in our frame
-  if(!base_local_planner::transformGlobalPlan(
-      *tf_,
-      global_plan_,
-      global_pose,
-      *costmap_,
-      global_frame_,
-      transformed_plan)) {
+  if (!base_local_planner::transformGlobalPlan( *tf_, global_plan_,
+      global_pose, *costmap_, global_frame_, transformed_plan)) {
     ROS_WARN("Could not transform the global plan to the frame of the controller");
     return false;
   }
@@ -132,7 +125,7 @@ bool LocalPlannerUtil::getLocalPlan(tf::Stamped<tf::Pose>& global_pose, std::vec
   //now we'll prune the plan based on the position of the robot
   // tyu-修剪plan，default: false
   // 看代码，裁掉了开始部分离中心在1m开外的点.
-  if(limits_.prune_plan) {
+  if (limits_.prune_plan) {
     base_local_planner::prunePlan(global_pose, transformed_plan, global_plan_);
   }
   return true;

@@ -46,30 +46,27 @@ typedef pf_vector_t (*pf_init_model_fn_t) (void *init_data);
 
 // Function prototype for the action model; generates a sample pose from
 // an appropriate distribution
-typedef void (*pf_action_model_fn_t) (void *action_data, 
+typedef void (*pf_action_model_fn_t) (void *action_data,
                                       struct _pf_sample_set_t* set);
 
 // Function prototype for the sensor model; determines the probability
 // for the given set of sample poses.
-typedef double (*pf_sensor_model_fn_t) (void *sensor_data, 
+typedef double (*pf_sensor_model_fn_t) (void *sensor_data,
                                         struct _pf_sample_set_t* set);
 
 
 // Information for a single sample
-typedef struct
-{
+typedef struct {
   // Pose represented by this sample
   pf_vector_t pose;
 
   // Weight for this pose
   double weight;
-  
 } pf_sample_t;
 
 
 // Information for a cluster of samples
-typedef struct
-{
+typedef struct {
   // Number of samples
   int count;
 
@@ -82,13 +79,11 @@ typedef struct
 
   // Workspace
   double m[4], c[2][2];
-  
 } pf_cluster_t;
 
 
 // Information for a set of samples
-typedef struct _pf_sample_set_t
-{
+typedef struct _pf_sample_set_t {
   // The samples
   int sample_count;
   pf_sample_t *samples;
@@ -103,19 +98,18 @@ typedef struct _pf_sample_set_t
   // Filter statistics
   pf_vector_t mean;
   pf_matrix_t cov;
-  int converged; 
+  int converged;
 } pf_sample_set_t;
 
 
 // Information for an entire filter
-typedef struct _pf_t
-{
+typedef struct _pf_t {
   // This min and max number of samples
   int min_samples, max_samples;
 
   // Population size parameters
   double pop_err, pop_z;
-  
+
   // The sample sets.  We keep two sets and use [current_set]
   // to identify the active set.
   int current_set;
@@ -132,7 +126,7 @@ typedef struct _pf_t
   void *random_pose_data;
 
   double dist_threshold; //distance threshold in each axis over which the pf is considered to not be converged
-  int converged; 
+  int converged;
 } pf_t;
 
 
@@ -183,8 +177,8 @@ void pf_draw_cep_stats(pf_t *pf, struct _rtk_fig_t *fig);
 // Draw the cluster statistics
 void pf_draw_cluster_stats(pf_t *pf, struct _rtk_fig_t *fig);
 
-//calculate if the particle filter has converged - 
-//and sets the converged flag in the current set and the pf 
+//calculate if the particle filter has converged -
+//and sets the converged flag in the current set and the pf
 int pf_update_converged(pf_t *pf);
 
 //sets the current set and pf converged values to zero

@@ -30,19 +30,18 @@
 #include <costmap_2d/VoxelGrid.h>
 #include <voxel_grid/voxel_grid.h>
 
-static inline void mapToWorld3D(const unsigned int mx, const unsigned int my, const unsigned int mz,
-                                      const double origin_x, const double origin_y, const double origin_z,
-                                      const double x_resolution, const double y_resolution, const double z_resolution,
-                                      double& wx, double& wy, double& wz)
-{
+static inline void mapToWorld3D(
+    const unsigned int mx, const unsigned int my, const unsigned int mz,
+    const double origin_x, const double origin_y, const double origin_z,
+    const double x_resolution, const double y_resolution, const double z_resolution,
+    double& wx, double& wy, double& wz) {
   // returns the center point of the cell
   wx = origin_x + (mx + 0.5) * x_resolution;
   wy = origin_y + (my + 0.5) * y_resolution;
   wz = origin_z + (mz + 0.5) * z_resolution;
 }
 
-struct Cell
-{
+struct Cell {
   double x;
   double y;
   double z;
@@ -58,10 +57,8 @@ float g_colors_a[] = {0.0f, 0.5f, 1.0f};
 V_Cell g_marked;
 V_Cell g_unknown;
 void voxelCallback(const ros::Publisher& pub_marked, const ros::Publisher& pub_unknown,
-                   const costmap_2d::VoxelGridConstPtr& grid)
-{
-  if (grid->data.empty())
-  {
+    const costmap_2d::VoxelGridConstPtr& grid) {
+  if (grid->data.empty()) {
     ROS_ERROR("Received empty voxel grid");
     return;
   }
@@ -86,32 +83,31 @@ void voxelCallback(const ros::Publisher& pub_marked, const ros::Publisher& pub_u
   g_unknown.clear();
   uint32_t num_marked = 0;
   uint32_t num_unknown = 0;
-  for (uint32_t y_grid = 0; y_grid < y_size; ++y_grid)
-  {
-    for (uint32_t x_grid = 0; x_grid < x_size; ++x_grid)
-    {
-      for (uint32_t z_grid = 0; z_grid < z_size; ++z_grid)
-      {
-        voxel_grid::VoxelStatus status = voxel_grid::VoxelGrid::getVoxel(x_grid, y_grid, z_grid, x_size, y_size, z_size,
-                                                                         data);
+  for (uint32_t y_grid = 0; y_grid < y_size; ++y_grid) {
+    for (uint32_t x_grid = 0; x_grid < x_size; ++x_grid) {
+      for (uint32_t z_grid = 0; z_grid < z_size; ++z_grid) {
+        voxel_grid::VoxelStatus status =
+          voxel_grid::VoxelGrid::getVoxel(x_grid, y_grid, z_grid,
+              x_size, y_size, z_size, data);
 
-        if (status == voxel_grid::UNKNOWN)
-        {
+        if (status == voxel_grid::UNKNOWN) {
           Cell c;
           c.status = status;
-          mapToWorld3D(x_grid, y_grid, z_grid, x_origin, y_origin, z_origin, x_res, y_res,
-                                                   z_res, c.x, c.y, c.z);
+          mapToWorld3D(x_grid, y_grid, z_grid,
+              x_origin, y_origin, z_origin,
+              x_res, y_res, z_res,
+              c.x, c.y, c.z);
 
           g_unknown.push_back(c);
 
           ++num_unknown;
-        }
-        else if (status == voxel_grid::MARKED)
-        {
+        } else if (status == voxel_grid::MARKED) {
           Cell c;
           c.status = status;
-          mapToWorld3D(x_grid, y_grid, z_grid, x_origin, y_origin, z_origin, x_res, y_res,
-                                                   z_res, c.x, c.y, c.z);
+          mapToWorld3D(x_grid, y_grid, z_grid,
+              x_origin, y_origin, z_origin,
+              x_res, y_res, z_res,
+              c.x, c.y, c.z);
 
           g_marked.push_back(c);
 
@@ -131,8 +127,7 @@ void voxelCallback(const ros::Publisher& pub_marked, const ros::Publisher& pub_u
     cloud.header.stamp = stamp;
 
     sensor_msgs::ChannelFloat32& chan = cloud.channels[0];
-    for (uint32_t i = 0; i < num_marked; ++i)
-    {
+    for (uint32_t i = 0; i < num_marked; ++i) {
       geometry_msgs::Point32& p = cloud.points[i];
       float& cval = chan.values[i];
       Cell& c = g_marked[i];
@@ -163,8 +158,7 @@ void voxelCallback(const ros::Publisher& pub_marked, const ros::Publisher& pub_u
     cloud.header.stamp = stamp;
 
     sensor_msgs::ChannelFloat32& chan = cloud.channels[0];
-    for (uint32_t i = 0; i < num_unknown; ++i)
-    {
+    for (uint32_t i = 0; i < num_unknown; ++i) {
       geometry_msgs::Point32& p = cloud.points[i];
       float& cval = chan.values[i];
       Cell& c = g_unknown[i];
@@ -186,11 +180,11 @@ void voxelCallback(const ros::Publisher& pub_marked, const ros::Publisher& pub_u
   }
 
   ros::WallTime end = ros::WallTime::now();
-  ROS_DEBUG("Published %d points in %f seconds", num_marked + num_unknown, (end - start).toSec());
+  ROS_DEBUG("Published %d points in %f seconds",
+      num_marked + num_unknown, (end - start).toSec());
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   ros::init(argc, argv, "costmap_2d_cloud");
   ros::NodeHandle n;
 

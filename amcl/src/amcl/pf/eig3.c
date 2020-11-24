@@ -41,6 +41,7 @@ static void tred2(double V[n][n], double d[n], double e[n]) {
     for (k = 0; k < i; k++) {
       scale = scale + fabs(d[k]);
     }
+
     if (scale == 0.0) {
       e[i] = d[i-1];
       for (j = 0; j < i; j++) {
@@ -56,6 +57,7 @@ static void tred2(double V[n][n], double d[n], double e[n]) {
         d[k] /= scale;
         h += d[k] * d[k];
       }
+
       f = d[i-1];
       g = sqrt(h);
       if (f > 0) {
@@ -80,11 +82,13 @@ static void tred2(double V[n][n], double d[n], double e[n]) {
         }
         e[j] = g;
       }
+
       f = 0.0;
       for (j = 0; j < i; j++) {
         e[j] /= h;
         f += e[j] * d[j];
       }
+
       hh = f / (h + h);
       for (j = 0; j < i; j++) {
         e[j] -= hh * d[j];
@@ -112,6 +116,7 @@ static void tred2(double V[n][n], double d[n], double e[n]) {
       for (k = 0; k <= i; k++) {
         d[k] = V[k][i+1] / h;
       }
+
       for (j = 0; j <= i; j++) {
         g = 0.0;
         for (k = 0; k <= i; k++) {
@@ -122,17 +127,19 @@ static void tred2(double V[n][n], double d[n], double e[n]) {
         }
       }
     }
+
     for (k = 0; k <= i; k++) {
       V[k][i+1] = 0.0;
     }
   }
+
   for (j = 0; j < n; j++) {
     d[j] = V[n-1][j];
     V[n-1][j] = 0.0;
   }
   V[n-1][n-1] = 1.0;
   e[0] = 0.0;
-} 
+}
 
 // Symmetric tridiagonal QL algorithm.
 
@@ -184,6 +191,7 @@ static void tql2(double V[n][n], double d[n], double e[n]) {
         if (p < 0) {
           r = -r;
         }
+
         d[l] = e[l] / (p + r);
         d[l+1] = e[l] * (p + r);
         dl1 = d[l+1];
@@ -234,7 +242,7 @@ static void tql2(double V[n][n], double d[n], double e[n]) {
     d[l] = d[l] + f;
     e[l] = 0.0;
   }
-  
+
   // Sort eigenvalues and corresponding vectors.
 
   for (i = 0; i < n-1; i++) {

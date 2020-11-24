@@ -52,15 +52,13 @@
 // Thread support
 #include <boost/thread.hpp>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 /**
  * @class ObservationBuffer
  * @brief Takes in point clouds from sensors, transforms them to the desired frame, and stores them
  */
-class ObservationBuffer
-{
-public:
+class ObservationBuffer {
+ public:
   /**
    * @brief  Constructs an observation buffer
    * @param  topic_name The topic of the observations, used as an identifier for error and warning messages
@@ -75,10 +73,11 @@ public:
    * @param  sensor_frame The frame of the origin of the sensor, can be left blank to be read from the messages
    * @param  tf_tolerance The amount of time to wait for a transform to be available when setting a new global frame
    */
-  ObservationBuffer(std::string topic_name, double observation_keep_time, double expected_update_rate,
-                    double min_obstacle_height, double max_obstacle_height, double obstacle_range,
-                    double raytrace_range, tf::TransformListener& tf, std::string global_frame,
-                    std::string sensor_frame, double tf_tolerance);
+  ObservationBuffer(std::string topic_name, double observation_keep_time,
+      double expected_update_rate, double min_obstacle_height,
+      double max_obstacle_height, double obstacle_range,
+      double raytrace_range, tf::TransformListener& tf, std::string global_frame,
+      std::string sensor_frame, double tf_tolerance);
 
   /**
    * @brief  Destructor... cleans up
@@ -123,16 +122,14 @@ public:
   /**
    * @brief  Lock the observation buffer
    */
-  inline void lock()
-  {
+  inline void lock() {
     lock_.lock();
   }
 
   /**
    * @brief  Lock the observation buffer
    */
-  inline void unlock()
-  {
+  inline void unlock() {
     lock_.unlock();
   }
 
@@ -141,7 +138,7 @@ public:
    */
   void resetLastUpdated();
 
-private:
+ private:
   /**
    * @brief  Removes any stale observations from the buffer list
    */

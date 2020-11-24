@@ -52,7 +52,7 @@ namespace base_local_planner {
  */
 class ObstacleCostFunction : public TrajectoryCostFunction {
 
-public:
+ public:
   ObstacleCostFunction(costmap_2d::Costmap2D* costmap);
   ~ObstacleCostFunction();
 
@@ -65,7 +65,8 @@ public:
   void setFootprint(std::vector<geometry_msgs::Point> footprint_spec);
 
   // helper functions, made static for easy unit testing
-  static double getScalingFactor(Trajectory &traj, double scaling_speed, double max_trans_vel, double max_scaling_factor);
+  static double getScalingFactor(Trajectory &traj, double scaling_speed,
+      double max_trans_vel, double max_scaling_factor);
   static double footprintCost(
       const double& x,
       const double& y,
@@ -75,7 +76,7 @@ public:
       costmap_2d::Costmap2D* costmap,
       base_local_planner::WorldModel* world_model);
 
-private:
+ private:
   costmap_2d::Costmap2D* costmap_;
   std::vector<geometry_msgs::Point> footprint_spec_;
   base_local_planner::WorldModel* world_model_;

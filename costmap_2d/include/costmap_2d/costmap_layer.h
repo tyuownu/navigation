@@ -41,18 +41,15 @@
 #include <costmap_2d/layer.h>
 #include <costmap_2d/layered_costmap.h>
 
-namespace costmap_2d
-{
+namespace costmap_2d {
 
-class CostmapLayer : public Layer, public Costmap2D
-{
-public:
+class CostmapLayer : public Layer, public Costmap2D {
+ public:
   CostmapLayer() : has_extra_bounds_(false),
     extra_min_x_(1e6), extra_max_x_(-1e6),
     extra_min_y_(1e6), extra_max_y_(-1e6) {}
 
-  bool isDiscretized()
-  {
+  bool isDiscretized() {
     return true;
   }
 
@@ -69,7 +66,7 @@ public:
    */
   void addExtraBounds(double mx0, double my0, double mx1, double my1);
 
-protected:
+ protected:
   /*
    * Updates the master_grid within the specified
    * bounding box using this layer's values.
@@ -77,7 +74,8 @@ protected:
    * TrueOverwrite means every value from this layer
    * is written into the master grid.
    */
-  void updateWithTrueOverwrite(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
+  void updateWithTrueOverwrite(costmap_2d::Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j);
 
   /*
    * Updates the master_grid within the specified
@@ -86,7 +84,8 @@ protected:
    * Overwrite means every valid value from this layer
    * is written into the master grid (does not copy NO_INFORMATION)
    */
-  void updateWithOverwrite(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
+  void updateWithOverwrite(costmap_2d::Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j);
 
   /*
    * Updates the master_grid within the specified
@@ -97,7 +96,8 @@ protected:
    * it is overwritten. If the layer's value is NO_INFORMATION,
    * the master value does not change.
    */
-  void updateWithMax(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
+  void updateWithMax(costmap_2d::Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j);
 
   /*
    * Updates the master_grid within the specified
@@ -111,7 +111,8 @@ protected:
    * If the sum value is larger than INSCRIBED_INFLATED_OBSTACLE,
    * the master value is set to (INSCRIBED_INFLATED_OBSTACLE - 1).
    */
-  void updateWithAddition(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
+  void updateWithAddition(costmap_2d::Costmap2D& master_grid,
+      int min_i, int min_j, int max_i, int max_j);
 
   /**
    * Updates the bounding box specified in the parameters to include
@@ -141,7 +142,7 @@ protected:
   void useExtraBounds(double* min_x, double* min_y, double* max_x, double* max_y);
   bool has_extra_bounds_;
 
-private:
+ private:
   double extra_min_x_, extra_max_x_, extra_min_y_, extra_max_y_;
 };
 

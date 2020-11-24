@@ -48,7 +48,8 @@ FootprintHelper::~FootprintHelper() {
   // TODO Auto-generated destructor stub
 }
 
-void FootprintHelper::getLineCells(int x0, int x1, int y0, int y1, std::vector<base_local_planner::Position2DInt>& pts) {
+void FootprintHelper::getLineCells(int x0, int x1, int y0, int y1,
+    std::vector<base_local_planner::Position2DInt>& pts) {
   //Bresenham Ray-Tracing
   int deltax = abs(x1 - x0);        // The difference between the x's
   int deltay = abs(y1 - y0);        // The difference between the y's
@@ -64,8 +65,7 @@ void FootprintHelper::getLineCells(int x0, int x1, int y0, int y1, std::vector<b
   {
     xinc1 = 1;
     xinc2 = 1;
-  }
-  else                          // The x-values are decreasing
+  } else                          // The x-values are decreasing
   {
     xinc1 = -1;
     xinc2 = -1;
@@ -75,8 +75,7 @@ void FootprintHelper::getLineCells(int x0, int x1, int y0, int y1, std::vector<b
   {
     yinc1 = 1;
     yinc2 = 1;
-  }
-  else                          // The y-values are decreasing
+  } else                          // The y-values are decreasing
   {
     yinc1 = -1;
     yinc2 = -1;
@@ -90,8 +89,7 @@ void FootprintHelper::getLineCells(int x0, int x1, int y0, int y1, std::vector<b
     num = deltax / 2;
     numadd = deltay;
     numpixels = deltax;         // There are more x-values than y-values
-  }
-  else                          // There is at least one y-value for every x-value
+  } else                          // There is at least one y-value for every x-value
   {
     xinc2 = 0;                  // Don't change the x for every iteration
     yinc1 = 0;                  // Don't change the y when numerator >= denominator
@@ -101,8 +99,7 @@ void FootprintHelper::getLineCells(int x0, int x1, int y0, int y1, std::vector<b
     numpixels = deltay;         // There are more y-values than x-values
   }
 
-  for (int curpixel = 0; curpixel <= numpixels; curpixel++)
-  {
+  for (int curpixel = 0; curpixel <= numpixels; curpixel++) {
     pt.x = x;      //Draw the current pixel
     pt.y = y;
     pts.push_back(pt);
@@ -120,7 +117,7 @@ void FootprintHelper::getLineCells(int x0, int x1, int y0, int y1, std::vector<b
 }
 
 
-void FootprintHelper::getFillCells(std::vector<base_local_planner::Position2DInt>& footprint){
+void FootprintHelper::getFillCells(std::vector<base_local_planner::Position2DInt>& footprint) {
   //quick bubble sort to sort pts by x
   base_local_planner::Position2DInt swap, pt;
   unsigned int i = 0;
@@ -177,11 +174,9 @@ void FootprintHelper::getFillCells(std::vector<base_local_planner::Position2DInt
 /**
  * get the cellsof a footprint at a given position
  */
-std::vector<base_local_planner::Position2DInt> FootprintHelper::getFootprintCells(
-    Eigen::Vector3f pos,
-    std::vector<geometry_msgs::Point> footprint_spec,
-    const costmap_2d::Costmap2D& costmap,
-    bool fill){
+std::vector<base_local_planner::Position2DInt> FootprintHelper::getFootprintCells (
+    Eigen::Vector3f pos, std::vector<geometry_msgs::Point> footprint_spec,
+    const costmap_2d::Costmap2D& costmap, bool fill) {
   double x_i = pos[0];
   double y_i = pos[1];
   double theta_i = pos[2];
@@ -210,7 +205,7 @@ std::vector<base_local_planner::Position2DInt> FootprintHelper::getFootprintCell
     //find the cell coordinates of the first segment point
     new_x = x_i + (footprint_spec[i].x * cos_th - footprint_spec[i].y * sin_th);
     new_y = y_i + (footprint_spec[i].x * sin_th + footprint_spec[i].y * cos_th);
-    if(!costmap.worldToMap(new_x, new_y, x0, y0)) {
+    if (!costmap.worldToMap(new_x, new_y, x0, y0)) {
       return footprint_cells;
     }
 
@@ -232,13 +227,13 @@ std::vector<base_local_planner::Position2DInt> FootprintHelper::getFootprintCell
   }
   new_x = x_i + (footprint_spec[0].x * cos_th - footprint_spec[0].y * sin_th);
   new_y = y_i + (footprint_spec[0].x * sin_th + footprint_spec[0].y * cos_th);
-  if(!costmap.worldToMap(new_x, new_y, x1, y1)) {
+  if (!costmap.worldToMap(new_x, new_y, x1, y1)) {
     return footprint_cells;
   }
 
   getLineCells(x0, x1, y0, y1, footprint_cells);
 
-  if(fill) {
+  if (fill) {
     getFillCells(footprint_cells);
   }
 

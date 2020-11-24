@@ -43,42 +43,40 @@
 #include <boost/thread.hpp>
 #include <dynamic_reconfigure/Reconfigure.h>
 
-namespace move_slow_and_clear 
-{
-  class MoveSlowAndClear : public nav_core::RecoveryBehavior
-  {
-    public:
-      MoveSlowAndClear();
-      ~MoveSlowAndClear();
+namespace move_slow_and_clear {
+class MoveSlowAndClear : public nav_core::RecoveryBehavior {
+ public:
+  MoveSlowAndClear();
+  ~MoveSlowAndClear();
 
-      /// Initialize the parameters of the behavior
-      void initialize (std::string n, tf::TransformListener* tf,
-          costmap_2d::Costmap2DROS* global_costmap,
-          costmap_2d::Costmap2DROS* local_costmap);
+  /// Initialize the parameters of the behavior
+  void initialize (std::string n, tf::TransformListener* tf,
+      costmap_2d::Costmap2DROS* global_costmap,
+      costmap_2d::Costmap2DROS* local_costmap);
 
-      /// Run the behavior
-      void runBehavior();
+  /// Run the behavior
+  void runBehavior();
 
-    private:
-      void setRobotSpeed(double trans_speed, double rot_speed);
-      void distanceCheck(const ros::TimerEvent& e);
-      double getSqDistance();
+ private:
+  void setRobotSpeed(double trans_speed, double rot_speed);
+  void distanceCheck(const ros::TimerEvent& e);
+  double getSqDistance();
 
-      void removeSpeedLimit();
+  void removeSpeedLimit();
 
-      ros::NodeHandle private_nh_, planner_nh_;
-      costmap_2d::Costmap2DROS* global_costmap_;
-      costmap_2d::Costmap2DROS* local_costmap_;
-      bool initialized_;
-      double clearing_distance_, limited_distance_;
-      double limited_trans_speed_, limited_rot_speed_, old_trans_speed_, old_rot_speed_;
-      ros::Timer distance_check_timer_;
-      tf::Stamped<tf::Pose> speed_limit_pose_;
-      boost::thread* remove_limit_thread_;
-      boost::mutex mutex_;
-      bool limit_set_;
-      ros::ServiceClient planner_dynamic_reconfigure_service_;
-  };
+  ros::NodeHandle private_nh_, planner_nh_;
+  costmap_2d::Costmap2DROS* global_costmap_;
+  costmap_2d::Costmap2DROS* local_costmap_;
+  bool initialized_;
+  double clearing_distance_, limited_distance_;
+  double limited_trans_speed_, limited_rot_speed_, old_trans_speed_, old_rot_speed_;
+  ros::Timer distance_check_timer_;
+  tf::Stamped<tf::Pose> speed_limit_pose_;
+  boost::thread* remove_limit_thread_;
+  boost::mutex mutex_;
+  bool limit_set_;
+  ros::ServiceClient planner_dynamic_reconfigure_service_;
+};
 };
 
 #endif
