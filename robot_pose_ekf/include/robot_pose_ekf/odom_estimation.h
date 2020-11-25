@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
 *     copyright notice, this list of conditions and the following
@@ -16,7 +16,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -54,12 +54,10 @@
 // log files
 #include <fstream>
 
-namespace estimation
-{
+namespace estimation {
 
-class OdomEstimation
-{
-public:
+class OdomEstimation {
+ public:
   /// constructor
   OdomEstimation();
 
@@ -75,7 +73,8 @@ public:
    * \param diagnostics_res returns false if the diagnostics found that the sensor measurements are inconsistent
    * returns true on successfull update
    */
-  bool update(bool odom_active, bool imu_active, bool gps_active, bool vo_active, const ros::Time& filter_time, bool& diagnostics_res);
+  bool update(bool odom_active, bool imu_active, bool gps_active,
+      bool vo_active, const ros::Time& filter_time, bool& diagnostics_res);
 
   /** initialize the extended Kalman filter
    * \param prior the prior robot pose
@@ -119,7 +118,8 @@ public:
    * \param meas the measurement to add
    * \param covar the 6x6 covariance matrix of this measurement, as defined in the PoseWithCovariance message
    */
-  void addMeasurement(const tf::StampedTransform& meas, const MatrixWrapper::SymmetricMatrix& covar);
+  void addMeasurement(const tf::StampedTransform& meas,
+      const MatrixWrapper::SymmetricMatrix& covar);
 
   /** set the output frame used by tf
    * \param output_frame the desired output frame published on /tf (e.g., odom_combined)
@@ -131,15 +131,15 @@ public:
    */
   void setBaseFootprintFrame(const std::string& base_frame);
 
-private:
+ private:
   /// correct for angle overflow
   void angleOverflowCorrect(double& a, double ref);
 
   // decompose Transform into x,y,z,Rx,Ry,Rz
   void decomposeTransform(const tf::StampedTransform& trans,
-			  double& x, double& y, double&z, double&Rx, double& Ry, double& Rz);
+        double& x, double& y, double&z, double&Rx, double& Ry, double& Rz);
   void decomposeTransform(const tf::Transform& trans,
-			  double& x, double& y, double&z, double&Rx, double& Ry, double& Rz);
+        double& x, double& y, double&z, double&Rx, double& Ry, double& Rz);
 
 
   // pdf / model / filter

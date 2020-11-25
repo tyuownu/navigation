@@ -40,12 +40,12 @@
 #include <pcl/register_point_struct.h>
 
 namespace navfn {
-    struct PotarrPoint {
-        float x;
-        float y;
-        float z;
-        float pot_value;
-    };
+struct PotarrPoint {
+  float x;
+  float y;
+  float z;
+  float pot_value;
+};
 }
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(

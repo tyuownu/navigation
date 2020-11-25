@@ -41,12 +41,12 @@
 PLUGINLIB_EXPORT_CLASS(rotate_recovery::RotateRecovery, nav_core::RecoveryBehavior)
 
 namespace rotate_recovery {
-RotateRecovery::RotateRecovery(): global_costmap_(NULL), local_costmap_(NULL), 
-  tf_(NULL), initialized_(false), world_model_(NULL) {} 
+RotateRecovery::RotateRecovery(): global_costmap_(NULL), local_costmap_(NULL),
+  tf_(NULL), initialized_(false), world_model_(NULL) {}
 
 void RotateRecovery::initialize(std::string name, tf::TransformListener* tf,
-    costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap){
-  if(!initialized_){
+    costmap_2d::Costmap2DROS* global_costmap, costmap_2d::Costmap2DROS* local_costmap) {
+  if (!initialized_) {
     name_ = name;
     tf_ = tf;
     global_costmap_ = global_costmap;
@@ -68,23 +68,22 @@ void RotateRecovery::initialize(std::string name, tf::TransformListener* tf,
     world_model_ = new base_local_planner::CostmapModel(*local_costmap_->getCostmap());
 
     initialized_ = true;
-  }
-  else{
+  } else {
     ROS_ERROR("You should not call initialize twice on this object, doing nothing");
   }
 }
 
-RotateRecovery::~RotateRecovery(){
+RotateRecovery::~RotateRecovery() {
   delete world_model_;
 }
 
-void RotateRecovery::runBehavior(){
-  if(!initialized_){
+void RotateRecovery::runBehavior() {
+  if (!initialized_) {
     ROS_ERROR("This object must be initialized before runBehavior is called");
     return;
   }
 
-  if(global_costmap_ == NULL || local_costmap_ == NULL){
+  if (global_costmap_ == NULL || local_costmap_ == NULL) {
     ROS_ERROR("The costmaps passed to the RotateRecovery object cannot be NULL. Doing nothing.");
     return;
   }
@@ -102,7 +101,7 @@ void RotateRecovery::runBehavior(){
   bool got_180 = false;
 
   double start_offset = 0 - angles::normalize_angle(tf::getYaw(global_pose.getRotation()));
-  while(n.ok()){
+  while (n.ok()) {
     local_costmap_->getRobotPose(global_pose);
 
     double norm_angle = angles::normalize_angle(tf::getYaw(global_pose.getRotation()));
@@ -115,12 +114,13 @@ void RotateRecovery::runBehavior(){
 
     //check if that velocity is legal by forward simulating
     double sim_angle = 0.0;
-    while(sim_angle < dist_left){
+    while (sim_angle < dist_left) {
       double theta = tf::getYaw(global_pose.getRotation()) + sim_angle;
 
       //make sure that the point is legal, if it isn't... we'll abort
-      double footprint_cost = world_model_->footprintCost(x, y, theta, local_costmap_->getRobotFootprint(), 0.0, 0.0);
-      if(footprint_cost < 0.0){
+      double footprint_cost = world_model_->footprintCost(x, y, theta,
+          local_costmap_->getRobotFootprint(), 0.0, 0.0);
+      if (footprint_cost < 0.0) {
         ROS_ERROR("Rotate recovery can't rotate in place because there is a potential collision. Cost: %.2f", footprint_cost);
         return;
       }
@@ -142,11 +142,11 @@ void RotateRecovery::runBehavior(){
     vel_pub.publish(cmd_vel);
 
     //makes sure that we won't decide we're done right after we start
-    if(current_angle < 0.0)
+    if (current_angle < 0.0)
       got_180 = true;
 
     //if we're done with our in-place rotation... then return
-    if(got_180 && current_angle >= (0.0 - tolerance_))
+    if (got_180 && current_angle >= (0.0 - tolerance_))
       return;
 
     r.sleep();

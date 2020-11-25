@@ -50,13 +50,12 @@ using cm::Costmap2DROS;
 
 namespace navfn {
 
-class NavfnWithCostmap : public NavfnROS
-{
-public:
+class NavfnWithCostmap : public NavfnROS {
+ public:
   NavfnWithCostmap(string name, Costmap2DROS* cmap);
   bool makePlanService(MakeNavPlan::Request& req, MakeNavPlan::Response& resp);
 
-private:
+ private:
   void poseCallback(const rm::PoseStamped::ConstPtr& goal);
   Costmap2DROS* cmap_;
   ros::ServiceServer make_plan_service_;
@@ -64,8 +63,8 @@ private:
 };
 
 
-bool NavfnWithCostmap::makePlanService(MakeNavPlan::Request& req, MakeNavPlan::Response& resp)
-{
+bool NavfnWithCostmap::makePlanService(MakeNavPlan::Request& req,
+    MakeNavPlan::Response& resp) {
   vector<PoseStamped> path;
 
   req.start.header.frame_id = "/map";
@@ -97,13 +96,14 @@ void NavfnWithCostmap::poseCallback(const rm::PoseStamped::ConstPtr& goal) {
 }
 
 
-NavfnWithCostmap::NavfnWithCostmap(string name, Costmap2DROS* cmap) : 
-  NavfnROS(name, cmap)
-{
+NavfnWithCostmap::NavfnWithCostmap(string name, Costmap2DROS* cmap)
+  : NavfnROS(name, cmap) {
   ros::NodeHandle private_nh("~");
   cmap_ = cmap;
-  make_plan_service_ = private_nh.advertiseService("make_plan", &NavfnWithCostmap::makePlanService, this);
-  pose_sub_ = private_nh.subscribe<rm::PoseStamped>("goal", 1, &NavfnWithCostmap::poseCallback, this);
+  make_plan_service_ = private_nh.advertiseService("make_plan",
+      &NavfnWithCostmap::makePlanService, this);
+  pose_sub_ = private_nh.subscribe<rm::PoseStamped>("goal",
+      1, &NavfnWithCostmap::poseCallback, this);
 }
 
 } // namespace

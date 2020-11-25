@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
 *     copyright notice, this list of conditions and the following
@@ -16,7 +16,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -56,15 +56,14 @@
 // log files
 #include <fstream>
 
-namespace estimation
-{
+namespace estimation {
 
 /** \mainpage
  *  \htmlinclude manifest.html
- * 
+ *
  * <b>Package Summary</b>
- * This package provides two main classes: 
- *  1) OdomEstimation performs all sensor fusion operations, and 
+ * This package provides two main classes:
+ *  1) OdomEstimation performs all sensor fusion operations, and
  *  2) OdomEstimationNode provides a ROS wrapper around OdomEstimation
 */
 
@@ -74,16 +73,15 @@ typedef boost::shared_ptr<nav_msgs::Odometry const> VoConstPtr;
 typedef boost::shared_ptr<nav_msgs::Odometry const> GpsConstPtr;
 typedef boost::shared_ptr<geometry_msgs::Twist const> VelConstPtr;
 
-class OdomEstimationNode
-{
-public:
+class OdomEstimationNode {
+ public:
   /// constructor
   OdomEstimationNode();
 
   /// destructor
   virtual ~OdomEstimationNode();
 
-private:
+ private:
   /// the mail filter loop that will be called periodically
   void spin(const ros::TimerEvent& e);
 
@@ -101,7 +99,8 @@ private:
 
 
   /// get the status of the filter
-  bool getStatus(robot_pose_ekf::GetStatus::Request& req, robot_pose_ekf::GetStatus::Response& resp);
+  bool getStatus(robot_pose_ekf::GetStatus::Request& req,
+      robot_pose_ekf::GetStatus::Response& resp);
 
   ros::NodeHandle node_;
   ros::Timer timer_;
@@ -113,7 +112,7 @@ private:
   OdomEstimation my_filter_;
 
   // estimated robot pose message to send
-  geometry_msgs::PoseWithCovarianceStamped  output_; 
+  geometry_msgs::PoseWithCovarianceStamped  output_;
 
   // robot state
   tf::TransformListener    robot_state_;

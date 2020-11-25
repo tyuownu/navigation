@@ -30,8 +30,7 @@ extern "C" {
 int goal[2];
 int start[2];
 
-double get_ms()
-{
+double get_ms() {
   struct timeval t0;
   gettimeofday(&t0,NULL);
   double ret = t0.tv_sec * 1000.0;
@@ -41,9 +40,7 @@ double get_ms()
 
 NavWin *nwin;
 
-void
-dispPot(NavFn *nav)
-{
+void dispPot(NavFn *nav) {
   nwin->drawPot(nav);
   Fl::check();
 }
@@ -56,54 +53,45 @@ int main(int argc, char **argv)
 {
   int dispn = 0;
 
-  int res = 50;			// 50 mm resolution
-  double size = 40.0;		// 40 m on a side
-  int inc = 2*COST_NEUTRAL;	// thin wavefront
+  int res = 50;      // 50 mm resolution
+  double size = 40.0;    // 40 m on a side
+  int inc = 2*COST_NEUTRAL;  // thin wavefront
   bool got_start_goal = false;
   std::string pgm_file_name;
-  
+
   start[0] = 420;
   start[1] = 420;
 
   goal[0] = 580;
   goal[1] = 400;
 
-  if (argc > 1)
-  {
+  if (argc > 1) {
     pgm_file_name = std::string( argv[ 1 ]) + ".pgm";
     std::string txt_file_name = std::string( argv[ 1 ]) + ".txt";
 
     std::ifstream txt_stream( txt_file_name.c_str() );
-    if( txt_stream )
-    {
+    if ( txt_stream ) {
       std::string name;
       int x, y;
-      for( int i = 0; i < 2; i++ )
-      {
+      for ( int i = 0; i < 2; i++ ) {
         txt_stream >> name >> x >> y;
-        if( txt_stream && name == "Goal:" )
-        {
+        if ( txt_stream && name == "Goal:" ) {
           goal[0] = x;
           goal[1] = y;
-        }
-        else if( txt_stream && name == "Start:" )
-        {
+        } else if ( txt_stream && name == "Start:" ) {
           start[0] = x;
           start[1] = y;
         }
       }
       got_start_goal = true;
       printf( "start is %d, %d, goal is %d, %d.\n", start[ 0 ], start[ 1 ], goal[ 0 ], goal[ 1 ]);
-    }
-    else
-    {
+    } else {
       printf( "Failed to open file %s, assuming you didn't want to open a file.\n", txt_file_name.c_str() );
     }
   }
 
   // get resolution (mm) and perhaps size (m)
-  if( !got_start_goal )
-  {
+  if ( !got_start_goal ) {
     if (argc > 1)
       res = atoi(argv[1]);
 
@@ -127,22 +115,17 @@ int main(int argc, char **argv)
   //  cmap = readPGM("initial_costmap_2332_1825.pgm",&sx,&sy,true);
   cmap = readPGM( pgm_file_name.c_str(),&sx,&sy,true);
   //  cmap = readPGM("navfn_pathlong.pgm",&sx,&sy,true);
-  if (cmap)
-    {
-      nav = new NavFn(sx,sy);
-
-
-    }
-  else
-    {
-      sx = (int)((.001 + size) / (res*.001));
-      sy = sx;
-      nav = new NavFn(sx,sy); // size in pixels
-      goal[0] = sx-10;
-      goal[1] = sy/2;
-      start[0] = 20;
-      start[1] = sy/2;
-    }
+  if (cmap) {
+    nav = new NavFn(sx,sy);
+  } else {
+    sx = (int)((.001 + size) / (res*.001));
+    sy = sx;
+    nav = new NavFn(sx,sy); // size in pixels
+    goal[0] = sx-10;
+    goal[1] = sy/2;
+    start[0] = 20;
+    start[1] = sy/2;
+  }
 
   // display
   nwin = new NavWin(sx,sy,"Potential Field");
@@ -176,56 +159,51 @@ int main(int argc, char **argv)
   else
     {
       nav->setupNavFn(false);
-      nav->setObs();		// simple obstacles
+      nav->setObs();    // simple obstacles
     }
   //nav->propNavFnDijkstra(sx*sy/20);
   nav->propNavFnAstar(sx*sy/20);
   double t1 = get_ms();
 
   printf("Time for plan calculation: %d ms\n", (int)(t1-t0));
-  
+
   // path
   nav->calcPath(4000);
 
 #else
   double t0 = get_ms();
   // set up cost map from file, if it exists
-  if (cmap)
-    {
-      //      nav->setCostMap(cmap);
-      memcpy(nav->costarr,cmap,sx*sy);
-      nav->setupNavFn(true);
-    }
-  else
-    {
-      nav->setupNavFn(false);
-      nav->setObs();		// simple obstacles
-    }
+  if (cmap) {
+    //      nav->setCostMap(cmap);
+    memcpy(nav->costarr,cmap,sx*sy);
+    nav->setupNavFn(true);
+  } else {
+    nav->setupNavFn(false);
+    nav->setObs();    // simple obstacles
+  }
   double t1 = get_ms();
   //  nav->calcNavFnAstar();
   nav->calcNavFnDijkstra(true);
   double t2 = get_ms();
-  printf("Setup: %d ms  Plan: %d ms  Total: %d ms\n", 
-	 (int)(t1-t0), (int)(t2-t1), (int)(t2-t0));
+  printf("Setup: %d ms  Plan: %d ms  Total: %d ms\n",
+      (int)(t1-t0), (int)(t2-t1), (int)(t2-t0));
 #endif
 
   // draw potential field
   float mmax = 0.0;
   float *pp = nav->potarr;
   int ntot = 0;
-  for (int i=0; i<nav->ny*nav->nx; i++, pp++)
-    {
-      if (*pp < 10e7 && *pp > mmax)
-	mmax = *pp;
-      if (*pp > 10e7)
-	ntot++;			// number of uncalculated cells
-    }
+  for (int i=0; i<nav->ny*nav->nx; i++, pp++) {
+    if (*pp < 10e7 && *pp > mmax)
+      mmax = *pp;
+    if (*pp > 10e7)
+      ntot++;      // number of uncalculated cells
+  }
   printf("[NavFn] Cells not touched: %d/%d\n", ntot, nav->nx*nav->ny);
   nwin->maxval = 4*mmax/3/15;
   dispPot(nav);
   while (Fl::check()) {
-    if( Fl::event_key( 'q' ))
-    {
+    if( Fl::event_key( 'q' )) {
       break;
     }
   }
@@ -239,7 +217,7 @@ int main(int argc, char **argv)
       float npot = nav->potgrid[k];
       printf("Pot: %0.1f\n", npot);
       printf("L: %0.1f R: %0.1f U: %0.1f D: %0.1f\n",
-	     nav->potgrid[k-1], nav->potgrid[k+1], nav->potgrid[k-st_nx], nav->potgrid[k+st_nx]);
+       nav->potgrid[k-1], nav->potgrid[k+1], nav->potgrid[k-st_nx], nav->potgrid[k+st_nx]);
     }
 #endif
 
@@ -252,44 +230,36 @@ int main(int argc, char **argv)
 
 static int CS;
 
-void
-setcostobs(COSTTYPE *cmap, int n, int w)
-{
+void setcostobs(COSTTYPE *cmap, int n, int w) {
   CS = 11;
-  for (int i=-CS/2; i<CS/2; i++)
-    {
-      COSTTYPE *cm = i*w + &cmap[n];
-      for (int j=-CS/2; j<CS/2; j++)
-	cm[j] = COST_NEUTRAL + 50;
-    }
+  for (int i = -CS/2; i < CS/2; i++) {
+    COSTTYPE *cm = i*w + &cmap[n];
+    for (int j = -CS/2; j < CS/2; j++)
+      cm[j] = COST_NEUTRAL + 50;
+  }
   CS = 7;
-  for (int i=-CS/2; i<CS/2; i++)
-    {
-      COSTTYPE *cm = i*w + &cmap[n];
-      for (int j=-CS/2; j<CS/2; j++)
-	cm[j] = COST_OBS;
-    }
+  for (int i = -CS/2; i < CS/2; i++) {
+    COSTTYPE *cm = i*w + &cmap[n];
+    for (int j = -CS/2; j < CS/2; j++)
+      cm[j] = COST_OBS;
+  }
 }
 
-void setcostunk(COSTTYPE *cmap, int n, int w)
-{
+void setcostunk(COSTTYPE *cmap, int n, int w) {
   cmap[n] = COST_OBS;
 }
 
-#define unknown_gray 0xCC	// seems to be the value of "unknown" in maps
+#define unknown_gray 0xCC  // seems to be the value of "unknown" in maps
 
-COSTTYPE *
-readPGM(const char *fname, int *width, int *height, bool raw)
-{
+COSTTYPE * readPGM(const char *fname, int *width, int *height, bool raw) {
   pm_init("navtest",0);
 
   FILE *pgmfile;
   pgmfile = fopen(fname,"r");
-  if (!pgmfile)
-    {
-      printf("[NavTest] Can't find file %s\n", fname);
-      return NULL;
-    }
+  if (!pgmfile) {
+    printf("[NavTest] Can't find file %s\n", fname);
+    return NULL;
+  }
 
   printf("[NavTest] Reading costmap file %s\n", fname);
   int ncols, nrows;
@@ -310,39 +280,33 @@ readPGM(const char *fname, int *width, int *height, bool raw)
   int ftot = 0;
   for (int ii = 0; ii < nrows; ii++) {
     pgm_readpgmrow(pgmfile, row, ncols, maxval, format);
-    if (raw)			// raw costmap from ROS
-      {
-	for (int jj(ncols - 1); jj >= 0; --jj)
-	  {
-	    int v = row[jj];
-	    cmap[ii*ncols+jj] = v;
-	    if (v >= COST_OBS_ROS)
-	      otot++;
-	    if (v == 0)
-	      ftot++;
-	  }
+    if (raw)      // raw costmap from ROS
+    {
+      for (int jj(ncols - 1); jj >= 0; --jj) {
+        int v = row[jj];
+        cmap[ii*ncols+jj] = v;
+        if (v >= COST_OBS_ROS)
+          otot++;
+        if (v == 0)
+          ftot++;
       }
-    else
-      {
-	ftot = ncols*nrows;
-	for (int jj(ncols - 1); jj >= 0; --jj)
-	  {
-	    if (row[jj] < unknown_gray && ii < nrows-7 && ii > 7)
-	      {
-		setcostobs(cmap,ii*ncols+jj,ncols);
-		otot++;
-		ftot--;
-	      }
+    } else {
+      ftot = ncols*nrows;
+      for (int jj(ncols - 1); jj >= 0; --jj) {
+        if (row[jj] < unknown_gray && ii < nrows-7 && ii > 7) {
+          setcostobs(cmap,ii*ncols+jj,ncols);
+          otot++;
+          ftot--;
+        }
 #if 1
-	    else if (row[jj] <= unknown_gray)
-	      {
-		setcostunk(cmap,ii*ncols+jj,ncols);
-		utot++;
-		ftot--;
-	      }
+        else if (row[jj] <= unknown_gray) {
+          setcostunk(cmap,ii*ncols+jj,ncols);
+          utot++;
+          ftot--;
+        }
 #endif
-	  }
       }
+    }
   }
   printf("[NavTest] Found %d obstacle cells, %d free cells, %d unknown cells\n", otot, ftot, utot);
   pgm_freerow(row);

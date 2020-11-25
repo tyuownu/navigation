@@ -43,41 +43,34 @@ extern "C" {
 }
 #endif
 
-void
-setcostobs(COSTTYPE *cmap, int n, int w)
-{
+void setcostobs(COSTTYPE *cmap, int n, int w) {
   int CS = 11;
-  for (int i=-CS/2; i<CS/2; i++)
-    {
-      COSTTYPE *cm = i*w + &cmap[n];
-      for (int j=-CS/2; j<CS/2; j++)
-	cm[j] = COST_NEUTRAL + 50;
-    }
+  for (int i=-CS/2; i<CS/2; i++) {
+    COSTTYPE *cm = i*w + &cmap[n];
+    for (int j=-CS/2; j<CS/2; j++)
+    cm[j] = COST_NEUTRAL + 50;
+  }
+
   CS = 7;
-  for (int i=-CS/2; i<CS/2; i++)
-    {
-      COSTTYPE *cm = i*w + &cmap[n];
-      for (int j=-CS/2; j<CS/2; j++)
-	cm[j] = COST_OBS;
-    }
+  for (int i=-CS/2; i<CS/2; i++) {
+    COSTTYPE *cm = i*w + &cmap[n];
+    for (int j=-CS/2; j<CS/2; j++)
+    cm[j] = COST_OBS;
+  }
 }
 
-void setcostunk(COSTTYPE *cmap, int n, int w)
-{
+void setcostunk(COSTTYPE *cmap, int n, int w) {
   cmap[n] = COST_OBS;
 }
 
-#define unknown_gray 0xCC	// seems to be the value of "unknown" in maps
+#define unknown_gray 0xCC  // seems to be the value of "unknown" in maps
 
-COSTTYPE *
-readPGM(const char *fname, int *width, int *height, bool raw)
-{
+COSTTYPE * readPGM(const char *fname, int *width, int *height, bool raw) {
   pm_init("navfn_tests",0);
 
   FILE *pgmfile;
   pgmfile = fopen(fname,"r");
-  if (!pgmfile)
-  {
+  if (!pgmfile) {
     printf("readPGM() Can't find file %s\n", fname);
     return NULL;
   }
@@ -101,10 +94,9 @@ readPGM(const char *fname, int *width, int *height, bool raw)
   int ftot = 0;
   for (int ii = 0; ii < nrows; ii++) {
     pgm_readpgmrow(pgmfile, row, ncols, maxval, format);
-    if (raw)			// raw costmap from ROS
+    if (raw)      // raw costmap from ROS
     {
-      for (int jj(ncols - 1); jj >= 0; --jj)
-      {
+      for (int jj(ncols - 1); jj >= 0; --jj) {
         int v = row[jj];
         cmap[ii*ncols+jj] = v;
         if (v >= COST_OBS_ROS)
@@ -112,20 +104,14 @@ readPGM(const char *fname, int *width, int *height, bool raw)
         if (v == 0)
           ftot++;
       }
-    }
-    else
-    {
+    } else {
       ftot = ncols*nrows;
-      for (int jj(ncols - 1); jj >= 0; --jj)
-      {
-        if (row[jj] < unknown_gray && ii < nrows-7 && ii > 7)
-        {
+      for (int jj(ncols - 1); jj >= 0; --jj) {
+        if (row[jj] < unknown_gray && ii < nrows-7 && ii > 7) {
           setcostobs(cmap,ii*ncols+jj,ncols);
           otot++;
           ftot--;
-        }
-        else if (row[jj] <= unknown_gray)
-        {
+        } else if (row[jj] <= unknown_gray) {
           setcostunk(cmap,ii*ncols+jj,ncols);
           utot++;
           ftot--;
@@ -133,7 +119,8 @@ readPGM(const char *fname, int *width, int *height, bool raw)
       }
     }
   }
-  printf("readPGM() Found %d obstacle cells, %d free cells, %d unknown cells\n", otot, ftot, utot);
+  printf("readPGM() Found %d obstacle cells, %d free cells, %d unknown cells\n",
+      otot, ftot, utot);
   pgm_freerow(row);
   *width = ncols;
   *height = nrows;
